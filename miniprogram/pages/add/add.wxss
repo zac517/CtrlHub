@@ -1,0 +1,236 @@
+/* pages/add/add.wxss */
+@import "../../iconfont.wxss";
+
+page {
+  background-color: #f3f5f8;
+}
+
+.container {
+  animation: 0.2s appear;
+  position: relative;
+}
+
+@keyframes appear {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+.head {
+  position: relative;
+  width: calc(100% - 40px);
+  height: 45px;
+}
+
+.backbtm {
+  color: #333333;
+  height: 45px;
+  display: inline-block;
+  position: absolute;
+  width: 45px;
+  bottom: 0;
+  line-height: 45px;
+  text-align: center;
+  z-index: 99;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(.81,-0.27,.21,1.31);
+}
+
+.backbtm .iconfont {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.backbtm:hover {
+  transform: scale(0.95);
+}
+
+.main {
+  width: 300vw;
+  height: calc(100vh - 300px);
+  flex-direction: row;
+  position: relative;
+  left: 100vw;
+  transition: all 0.3s ease-in-out;
+}
+
+.left {transform: translateX(0);}
+.center {transform: translateX(-100vw);}
+.right {transform: translateX(-200vw);}
+
+.box {
+  width: 100vw;
+  position: relative;
+  padding: 20px;
+  display: inline-block;
+  box-sizing: border-box;
+  vertical-align: top;
+}
+
+
+.title {
+  height: 100%;
+  width: calc(100% - 55px);
+  background-color: #489af8;
+  color: white;
+  line-height: 45px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  display: inline-block;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  left: 55px;
+  position: relative;
+}
+
+.btm {
+  display: inline-block;
+  width: 120px !important;
+  background-color: white;
+  border-radius: 10px;
+  position: absolute;
+  height: 45px;
+  line-height: 45px;
+  padding: 0;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  color: #333333;
+  font-weight: 400;
+  margin-top: 20px;
+  right: 20px;
+  transition: all 0.2s cubic-bezier(.81,-0.27,.21,1.31);
+}
+
+.btm:hover {
+  transform: scale(0.95);
+  background-color: #489af8;
+  color: white;
+}
+
+.scanbtm {
+  left: 0px !important;
+  position: absolute;
+}
+
+.list {
+  height: calc(100vh - 300px);
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow-y: scroll;
+  width: 100%;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.device-item {
+  height: 60px;
+  width: 100%;
+  background-color: #ffffff;
+  color: #333333;
+  line-height: 38px;
+  box-sizing: border-box;
+  padding: 10px 20px;
+  display: inline-block;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  position: relative;
+}
+
+.device-info {
+  transition: all 0.2s cubic-bezier(.81,-0.27,.21,1.31);
+  position: relative;
+  height: 40px;
+}
+
+.device-info::before {
+  content: "";
+  width: 6px;
+  background-color: #489af8;
+  height: calc(100% - 30px);
+  position: absolute;
+  left: -15px;
+  top: 15px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(.81,-0.27,.21,1.31);
+}
+
+.selected .device-info::before {
+  opacity: 1;
+  height: calc(100% - 10px);
+  top: 5px;
+  transition: all 0.2s;
+}
+
+.selected .device-info {
+  margin-left: 20px;
+}
+
+.device-item::after {
+  content: "";
+  width: calc(100% - 40px);
+  background-color: rgb(238, 238, 238);
+  height: 1px;
+  position: absolute;
+  bottom: 0;
+}
+
+.table {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  position: absolute;
+  top: 95px;
+}
+
+.table-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.wifi-wrapper {
+  height: 60px;
+  position: relative;
+}
+
+.underline::after {
+  content: "";
+  width: calc(100% - 40px);
+  background-color: rgb(238, 238, 238);
+  height: 1px;
+  position: absolute;
+  bottom: 0;
+  margin-left: 20px;
+}
+
+.wifi-input {
+  height: 100%;
+  position: absolute;
+  background-color: white;
+  right: 0;
+  top: 0;
+  width: calc(100% - 120px);
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+
+.wifi-label {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  padding-left: 20px;
+  line-height: 60px;
+  box-sizing: border-box;
+  background-color: white;
+  color: #333333;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}

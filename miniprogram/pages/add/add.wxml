@@ -1,0 +1,49 @@
+<!--pages/add/add.wxml-->
+<view class="container">
+  <view class="head">
+    <view class="backbtm" bindtap="backTo">
+      <icon class="iconfont icon-fenxiang"></icon>
+    </view>
+    <view class="title">{{title}}</view>
+  </view>
+
+  <view class="main {{position}}">
+    <view class="box">
+      <view class="list"> 
+      <view wx:for="{{devices}}" wx:key="deviceId" class="device-item {{selectedDeviceId == item.deviceId ? 'selected' : ''}}" bindtap="selectDevice" data-device-id="{{item.deviceId}}">
+        <view class="device-info">
+          <text>{{item.name || item.localName || '未命名设备'}}</text>
+        </view>
+      </view>
+    </view>
+    <button bindtap="connectDevice" class="btm">下一步</button>
+    </view>
+    <view class="box">
+    <view class="table-wrapper">
+      <view class="wifi-wrapper underline">
+        <text class="wifi-label">设备名称</text>
+        <input class="wifi-input" bindinput="handleInput" data-input-type="name" 	placeholder="台灯" />
+      </view>
+      <view class="wifi-wrapper">
+        <text class="wifi-label">所属空间</text>
+        <input class="wifi-input" bindinput="handleInput" data-input-type="space" 	placeholder="客厅"/>
+      </view>
+    </view>
+    <button bindtap="centerNext" class="btm">下一步</button>
+    </view>
+    <view class="box">
+    <view class="table-wrapper">
+      <view class="wifi-wrapper underline">
+        <text class="wifi-label">WIFI名称</text>
+        <input class="wifi-input" bindinput="handleInput" data-input-type="ssid" />
+      </view>
+      <view class="wifi-wrapper">
+        <text class="wifi-label">WIFI密码</text>
+        <input class="wifi-input" bindinput="handleInput" data-input-type="password" />
+      </view>
+    </view>
+    <button bindtap="setWiFi" class="btm">完成设置</button>
+    </view>
+  </view>
+  
+</view>

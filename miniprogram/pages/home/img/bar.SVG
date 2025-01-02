@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- 定义剪切路径 -->
+  <defs>
+    <clipPath id="clip">
+      <!-- 使用带有半圆的路径 -->
+      <path d="
+        M0,50 
+        Q200,0 400,50 
+        L400,100 
+        L0,100 
+        Z
+        M200,50
+        A25,25 0 1,0 250,50
+        Z" />
+    </clipPath>
+  </defs>
+
+  <!-- 使用剪切路径 -->
+  <rect width="400" height="100" clip-path="url(#clip)" fill="#6a0dad" />
+</svg>

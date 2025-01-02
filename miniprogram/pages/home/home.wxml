@@ -1,0 +1,30 @@
+<!--pages/home/home.wxml-->
+<view class="container">
+  <view class="head">
+    <text>下午好！ {{userInfo.nickName}}</text>
+  </view>
+
+  <view class="device-list">
+    <view wx:for="{{devices}}" wx:key="deviceId" class="device-item {{item.checked ? 'checked' : ''}}" data-device-id="{{item.deviceId}}"> 
+      <view class="lamp-wrapper">
+        <icon class="iconfont icon-lamp"></icon>
+      </view>
+      <view class="more-wrapper">
+        <icon class="iconfont icon-more"></icon>
+      </view>
+      <view class="device-info">
+        <text class="space">{{item.space}}</text> 
+        <text class="name">{{item.name}}</text> 
+      </view> 
+      <switch data-device-id="{{item.deviceId}}" color="#0077ff" class='switch-view' checked="{{item.checked}}" bindchange="switchChange" type='switch'/>
+    </view>
+  </view>
+  <view class="bottom-bar">
+    <view class="footer-item" bindtap="onTabClick" data-tab="home"><icon class="iconfont icon-home"></icon></view>
+    <view class="footer-item" bindtap="onTabClick" data-tab="data"><icon class="iconfont icon-pie-chart"></icon></view>
+    <view class="footer-item add" bindtap="onAddClick"><icon class="iconfont icon-add"></icon></view>
+    <view class="footer-item" bindtap="onTabClick" data-tab="notice"><icon class="iconfont icon-notice"></icon></view>
+    <view class="footer-item" bindtap="onTabClick" data-tab="profile"><icon class="iconfont icon-Profile"></icon></view>
+  </view>
+</view>
+

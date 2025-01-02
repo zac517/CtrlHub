@@ -1,0 +1,19 @@
+{
+  "cloud": true,
+  "pages": [
+    "pages/home/home",
+    "pages/login/login",
+    "pages/device/device",
+    "pages/add/add"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Weixin",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationStyle": "custom"
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
