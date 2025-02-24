@@ -1,4 +1,6 @@
 // pages/home/home.js
+import { isBluetoothAdapterOpened } from "../../utils/comm.js"
+
 Page({
 
   /**
@@ -65,7 +67,12 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-
+    if (isBluetoothAdapterOpened()) {
+      console.log("a");
+    }
+    else {
+      console.log("b")
+    }
   },
 
   /**
