@@ -2,36 +2,104 @@
 import { isBluetoothAdapterOpened } from "../../utils/comm.js"
 
 Page({
-
   /**
    * 页面的初始数据
    */
   data: {
-    isDropdownOpen: false,  // 控制下拉栏显示
-    selectedOption: null,   // 当前选中项
-    options: ['移除设备'], // 下拉数据
-    dropdownAnimation: {},   // 动画对象
-    savedData: [{configurename:"jjj"},{configurename:"fuck"},{configurename:"kllj"}],  //保存的设备数据
-    blue:false
+    devices: [
+      {
+        name: "台灯1",
+        deviceId: "AAAA",
+        UUID: "AAAA",
+        isOnline: false,
+      },
+      {
+        name: "台灯2",
+        deviceId: "BBBB",
+        UUID: "BBBB",
+        isOnline: true,
+      },
+      {
+        name: "台灯3",
+        deviceId: "CCCC",
+        UUID: "CCCC",
+        isOnline: true,
+      },
+      {
+        name: "台灯1",
+        deviceId: "AAAA",
+        UUID: "AAAA",
+        isOnline: false,
+      },
+      {
+        name: "台灯2",
+        deviceId: "BBBB",
+        UUID: "BBBB",
+        isOnline: true,
+      },
+      {
+        name: "台灯3",
+        deviceId: "CCCC",
+        UUID: "CCCC",
+        isOnline: true,
+      },
+      {
+        name: "台灯1",
+        deviceId: "AAAA",
+        UUID: "AAAA",
+        isOnline: false,
+      },
+      {
+        name: "台灯2",
+        deviceId: "BBBB",
+        UUID: "BBBB",
+        isOnline: true,
+      },
+      {
+        name: "台灯3",
+        deviceId: "CCCC",
+        UUID: "CCCC",
+        isOnline: true,
+      },
+      {
+        name: "台灯1",
+        deviceId: "AAAA",
+        UUID: "AAAA",
+        isOnline: false,
+      },
+      {
+        name: "台灯2",
+        deviceId: "BBBB",
+        UUID: "BBBB",
+        isOnline: true,
+      },
+      {
+        name: "台灯3",
+        deviceId: "CCCC",
+        UUID: "CCCC",
+        isOnline: true,
+      },
+      {
+        name: "台灯1",
+        deviceId: "AAAA",
+        UUID: "AAAA",
+        isOnline: false,
+      },
+      {
+        name: "台灯2",
+        deviceId: "BBBB",
+        UUID: "BBBB",
+        isOnline: true,
+      },
+      {
+        name: "台灯3",
+        deviceId: "CCCC",
+        UUID: "CCCC",
+        isOnline: true,
+      },
+    ]
   },
 
-  // 切换下拉栏状态
-  toggleDropdown() {
-    if (!this.data.isDropdownOpen) {
-      // 展开动画
-      const animation = wx.createAnimation({
-        duration: 300,
-        timingFunction: 'ease'
-      })
-      animation.opacity(1).step()
-      this.setData({
-        isDropdownOpen: true,
-        dropdownAnimation: animation.export()
-      })
-    } else {
-      this.closeDropdown()
-    }
-  },
   add(){
     this.animate('.container', [
         { opacity: 1.0 },
@@ -41,27 +109,6 @@ Page({
           url: '/pages/add/add'
         });
       }.bind(this))
-  },
-  // 选择选项
-  selectOption(e) {
-    const index = e.currentTarget.dataset.index
-    this.setData({
-      selectedOption: this.data.options[index]
-    })
-
-  },
-
-  // 关闭下拉栏
-  closeDropdown() {
-    const animation = wx.createAnimation({
-      duration: 300,
-      timingFunction: 'ease'
-    })
-    animation.opacity(0).step()
-    this.setData({
-      isDropdownOpen: false,
-      dropdownAnimation: animation.export()
-    })
   },
 
   /**

@@ -1,45 +1,12 @@
 <view class="container">
   <view class="header">
     <text class="title">设备列表</text>
-  </view>
-  <view>
-  <button style="width: 114rpx; display: block; box-sizing: border-box; left: 318rpx; top: -118rpx; height: 93rpx; position: relative" bind:tap="toggleDropdown">
-    <image style="position: relative; left: -37rpx; top: -16rpx; width: 95rpx; height: 83rpx; display: inline-block; box-sizing: border-box" src="/image/more.png"/>
-  </button>
-  <!-- 下拉栏 -->
-  <view 
-    class="dropdown" 
-    wx:if="{{ isDropdownOpen }}"
-    animation="{{ dropdownAnimation }}"
-  >
-    <view 
-      wx:for="{{ options }}" 
-      wx:key="index"
-      class="dropdown-item"
-      bindtap="selectOption"
-      data-index="{{ index }}"
-    >
-      {{ item }}
-    </view>
-  </view>
-
-  <!-- 遮罩层（点击外部关闭下拉栏） -->
-  <view 
-    class="mask" 
-    wx:if="{{ isDropdownOpen }}" 
-    bindtap="closeDropdown"
-  />
-  <button style="width: 72rpx; height: 68rpx; display: block; box-sizing: border-box; left: 215rpx; top: -198rpx; position: relative" bind:tap="add">
-    <image src="/image/plus.png" style="position: relative; left: -33rpx; top: -16rpx; width: 66rpx; height: 68rpx; display: inline-block; box-sizing: border-box"></image>
-  </button>
+    <view class="add-button"><icon class="iconfont icon-add"/></view>
+    <view class="menu-button"><icon class="iconfont icon-menu"/></view>
   </view>
   <view class="list">
-  <view  wx:for="{{savedData}}" wx:key="index" class="listitem">
-    <button bind:tap="bluetooth" class="listbutton">
-        <image class="itemimg" src="/image/light.png"/>
-        <text class="itemname" >{{item.configurename}}</text>
-        <text class="itemstatus" >{{blue ? '蓝牙已连接' : '蓝牙未连接'}}</text>
-    </button>
+    <view wx:for="{{devices}}" wx:key="index" class="deviceCard">
+        <text class="deviceName" >{{item.name}}</text>
     </view>
   </view>
 </view>
