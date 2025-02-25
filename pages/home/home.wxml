@@ -34,12 +34,12 @@
   </button>
   </view>
   <view class="list">
-    <block wx:for="{{savedData}}" wx:key="index">
-        <button class="listitem" bind:tap="bluetooth">
-            <image class="itemimg" src="/image/light.png"/>
-            <text class="itemname" >{{item.configurename}}</text>
-            <text class="itemstatus" >{{blue ? '蓝牙已连接' : '蓝牙未连接'}}</text>
-        </button>
-    </block>
+  <view  wx:for="{{savedData}}" wx:key="index" class="listitem">
+    <button bind:tap="bluetooth" class="listbutton">
+        <image class="itemimg" src="/image/light.png"/>
+        <text class="itemname" >{{item.configurename}}</text>
+        <text class="itemstatus" >{{blue ? '蓝牙已连接' : '蓝牙未连接'}}</text>
+    </button>
+    </view>
   </view>
 </view>
