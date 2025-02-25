@@ -87,3 +87,71 @@
     color: #666;
   }
   
+  .list{
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: flex-start;
+    align-items: flex-start;
+    width:100%;
+  }
+
+  .listitem{
+    height:240rpx;
+    flex: 0 0 45%;
+    /* margin-right: 2%;  
+    margin-left:2%; */
+    margin-bottom: 10px;  /* 每行的底部间隙 */
+    position: relative;  /* 设置按钮的定位方式 */
+    padding: 20rpx 40rpx;  /* 给按钮添加一些内边距，避免文本贴边 */
+    /* border:5rpx solid #666;设置边界线 */
+    background-color: #ffffff;
+    border-radius: 45rpx; /*设置圆角*/
+    /* flex:1; */
+    /* display:flex */
+  }
+
+.itemname{
+    position: absolute;  /* 绝对定位，使文本能相对按钮的位置定位 */
+  top: 10rpx;  /* 将文本放在按钮的顶部 */
+  left: 0;  /* 将文本放在按钮的左边 */
+  width: 200rpx;  /* 设置文本宽度 */
+  height: 50rpx;  /* 设置文本高度 */
+  font-size: 30rpx;  /* 设置字体大小 */
+  line-height: 30rpx;  /* 设置行高，确保文本垂直居中 */
+  padding-left: 10rpx;  /* 给文本左边添加间距，避免贴着边缘 */
+  padding-top: 10rpx;  /* 给文本顶部添加间距，避免贴着边缘 */
+  overflow: hidden;  /* 防止文本溢出 */
+}
+
+.itemstatus{
+    position: absolute;  /* 绝对定位，使文本能相对按钮的位置定位 */
+    bottom: 10rpx;  /* 将文本放在按钮的顶部 */
+    left: 0;  /* 将文本放在按钮的左边 */
+    width: 200rpx;  /* 设置文本宽度 */
+    height: 50rpx;  /* 设置文本高度 */
+    font-size: 30rpx;  /* 设置字体大小 */
+    line-height: 30rpx;  /* 设置行高，确保文本垂直居中 */
+    padding-left: 10rpx;  /* 给文本左边添加间距，避免贴着边缘 */
+    padding-top: 10rpx;  /* 给文本顶部添加间距，避免贴着边缘 */
+    overflow: hidden;  /* 防止文本溢出 */
+}
+
+ .itemimg{
+    position: absolute;  /* 绝对定位，使文本能相对按钮的位置定位 */
+    bottom: 30rpx;  /* 将文本放在按钮的顶部 */
+    right: 0;  /* 将文本放在按钮的左边 */
+    width: 150rpx;  /* 设置文本宽度 */
+    height: 150rpx;  /* 设置文本高度 */
+    padding-left: 10rpx;  /* 给文本左边添加间距，避免贴着边缘 */
+    padding-top: 10rpx;  /* 给文本顶部添加间距，避免贴着边缘 */
+    overflow: hidden;  /* 防止文本溢出 */
+ }
+
+ /* .listblock{
+    display: flex;
+    width:100%;
+    flex:1;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap; 
+ } */
