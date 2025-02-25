@@ -10,15 +10,15 @@ function isBluetoothAdapterOpened () {
           success (res) {
             return true;
           },
-          fail (res) {
+          fail (err) {
             return false;
           }
         })
       }
     },
-    fail (res) {
+    fail (err) {
       console.log("获取本机蓝牙适配器状态失败");
-      console.log(res);
+      console.log(err);
       return false;
     }
   })
@@ -37,17 +37,31 @@ let devices = [
 function updateDeviceState () {
   // 检查是否已开启蓝牙
   if (isBluetoothAdapterOpened()) {
-    // 查找已添加的设备
+    // 根据已添加的设备列表生成UUID查找列表
     let uuidList = devices.map(device => device.UUID);
+    // 调用API
     wx.startBluetoothDevicesDiscovery({
       services: uuidList,
       success (res) {
-        console.log(res)
+        // 监听
+      },
+      fail (err) {
+        console.log("开始搜寻附近的蓝牙外围设备失败");
+        console.log(err);
+        wx.showToast({
+          title: '请开启手机蓝牙',
+          icon: 'none'
+        });
       }
     })
   }
-  
-
+  // 如果蓝牙没有开启
+  else {
+    wx.showToast({
+      title: '请开启手机蓝牙',
+      icon: 'none'
+    });
+  }
 }
 
 module.exports = {
