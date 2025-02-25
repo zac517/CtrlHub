@@ -1,6 +1,6 @@
 /* Container for the whole layout */
 .container {
-    padding: 20px;
+    padding: 5px;
     background-color: #f9f9f9;
   }
   
@@ -93,19 +93,41 @@
     justify-content: flex-start;
     align-items: flex-start;
     width:100%;
+    gap:20rpx;
+    /* flex-direction: row; */
+    /* padding: 5px; */
   }
 
   .listitem{
+    display: flex;
     height:240rpx;
-    flex: 0 0 45%;
+    /* flex: 0 0 45%; */
+    /* width: 50%; */
+    /* margin: 10px 0; */
     /* margin-right: 2%;  
     margin-left:2%; */
     margin-bottom: 10px;  /* 每行的底部间隙 */
-    position: relative;  /* 设置按钮的定位方式 */
-    padding: 20rpx 40rpx;  /* 给按钮添加一些内边距，避免文本贴边 */
+    /* position: relative;   */
     /* border:5rpx solid #666;设置边界线 */
     background-color: #ffffff;
-    border-radius: 45rpx; /*设置圆角*/
+    border-radius: 45rpx; 
+    /* flex:1; */
+    /* display:flex */
+  }
+
+  .listbutton{
+    height:240rpx;
+    /* flex: 0 0 45%;
+    width: 50%; */
+    /* margin: 10px 0; */
+    /* margin-right: 2%;  
+    margin-left:2%; */
+    /* margin-bottom: 10px;   */
+    position: relative;  
+    /* padding: 20rpx 40rpx;  */
+    /* border:5rpx solid #666;设置边界线 */
+    background-color: #ffffff;
+    border-radius: 45rpx; 
     /* flex:1; */
     /* display:flex */
   }

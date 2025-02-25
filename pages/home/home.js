@@ -11,7 +11,7 @@ Page({
     selectedOption: null,   // 当前选中项
     options: ['移除设备'], // 下拉数据
     dropdownAnimation: {},   // 动画对象
-    savedData: [{configurename:"jjj"},{configurename:"fuck"}],  //保存的设备数据
+    savedData: [{configurename:"jjj"},{configurename:"fuck"},{configurename:"kllj"}],  //保存的设备数据
     blue:false
   },
 
