@@ -62,7 +62,8 @@
 }
 
 .inactive {
-  opacity: 0.3;
+  background-color: rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .disappear {
@@ -122,4 +123,14 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked {
 .hint-number {
   letter-spacing: 0;
   margin:0 0.2em 0 0.1em;
+}
+
+.footer {
+  height: 64px;
+  width: calc(100% - 60px);
+  background-color: white;
+  position: fixed;
+  bottom: 30px;
+  border-radius: 15px;
+  border: 1px solid  rgba(0, 0, 0, 0.1);
 }

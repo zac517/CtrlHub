@@ -8,10 +8,15 @@
     <view class="hint {{isOnSelect ? 'appear' : 'disappear'}}">已选择<text class="hint-number">{{selectedCount}}</text>项</view>
     <view class="cancel {{isOnSelect ? 'appear' : 'disappear'}}" bind:tap="cancelSelect">取消</view>
   </view>
-  <view class="list">
-    <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="startSelect">
-        <text class="device-name" >{{item.name}}</text>
-        <checkbox class="device-check {{isOnSelect ? 'appear' : 'disappear'}}" checked="{{item.isSelected}}" bindchange="handleCheckboxChange" data-index="{{index}}"/>
+  <checkbox-group bindchange="handleCheckboxChange">
+    <view class="list">
+      <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="startSelect" data-device="{{item}}">
+          <text class="device-name" >{{item.name}}</text>
+          <checkbox class="device-check {{isOnSelect ? 'appear' : 'disappear'}}" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
+      </view>
     </view>
+  </checkbox-group>
+  <view class="footer {{isOnSelect ? 'appear' : 'disappear'}}">
+
   </view>
 </view>
