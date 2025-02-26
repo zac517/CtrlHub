@@ -5,4 +5,5 @@
   height: 100vh;
   box-sizing: border-box;
   --theme-color: #489af8;
+  --black: #333333;
 }

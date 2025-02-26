@@ -11,14 +11,14 @@
 .title {
   font-size: 26px;
   font-weight: 600;
-  color: #333333;
+  color: var(--black);
   letter-spacing: 0.1em;
 }
 
 .add-button, .menu-button {
   width: 40px;
   height: 40px;
-  color: #333333;
+  color: var(--black);
   text-align: center;
   position: absolute;
 }
@@ -49,15 +49,15 @@
   display: grid;
 }
 
-.deviceCard {
+.device-card {
   background-color: white;
   border-radius: 10px;
-  padding: 15px;
+  padding: 13px 15px;
   position: relative;
 }
 
-.deviceName {
-  font-size: 16px;
+.device-name {
+  font-size: 15px;
   letter-spacing: 0.1em;
 }
 
@@ -66,10 +66,10 @@
 }
 
 .disappear {
-  display: none;
+  display: none !important;
 }
 
-.deviceCheck {
+.device-check {
   position: absolute;
   right: 15px;
   bottom: 15px;
@@ -91,4 +91,35 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked {
   background: var(--theme-color);
   border-color:var(--theme-color);
   color: white;
+}
+
+.select-all, .cancel, .hint {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+}
+
+.select-all, .cancel {
+  color: var(--theme-color);
+  position: absolute;
+}
+
+.select-all {
+  left: 0;
+}
+
+.cancel {
+  right: 0;
+}
+
+.hint {
+  color: var(--black);
+  width: 100%;
+  text-align: center;
+}
+
+.hint-number {
+  letter-spacing: 0;
+  margin:0 0.2em 0 0.1em;
 }

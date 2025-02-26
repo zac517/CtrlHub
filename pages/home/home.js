@@ -2,9 +2,6 @@
 import { isBluetoothAdapterOpened } from "../../utils/comm.js"
 
 Page({
-  /**
-   * 页面的初始数据
-   */
   data: {
     devices: [
       {
@@ -30,6 +27,7 @@ Page({
       },
     ],
     isOnSelect: false,
+    isSelectedAll: false,
     selectedCount: 0,
   },
 
@@ -56,6 +54,7 @@ Page({
     this.setData({
       devices: newDevices,
       isOnSelect: false,
+      isSelectedAll: false,
       selectedCount: 0,
     });
   },
@@ -69,7 +68,89 @@ Page({
     this.setData({
       devices,
       isOnSelect: true,
+      isSelectedAll: false,
       selectedCount: 0
+    });
+  },
+  // 全选函数
+  selectAll() {
+    const devices = this.data.devices.map(device => ({
+      ...device,
+      isSelected: true
+    }));
+    const selectedCount = devices.length;
+    this.setData({
+      devices,
+      selectedCount,
+      isSelectedAll: true,
+    });
+  },
+
+  // 取消全选函数
+  cancelSelectAll() {
+    const devices = this.data.devices.map(device => ({
+      ...device,
+      isSelected: false
+    }));
+    this.setData({
+      devices,
+      selectedCount: 0,
+      isSelectedAll: false,
+    });
+  },
+
+  // 取消选择函数
+  cancelSelect() {
+    this.setData({
+      isOnSelect: false,
+    });
+  },
+
+  // 删除选中设备的函数
+  deleteSelected() {
+    const devices = this.data.devices.filter(device =>!device.isSelected);
+    const selectedCount = 0;
+    this.setData({
+      devices,
+      selectedCount,
+      isSelectedAll: false,
+    });
+  },
+
+  // 处理选中事件函数
+  handleCheckboxChange(e) {
+    const index = e.currentTarget.dataset.index;
+    const devices = this.data.devices;
+    const newDevices = [...devices];
+    const wasSelected = newDevices[index].isSelected; // 记录之前的选中状态
+    console.log('a');
+
+    // 切换当前设备的选中状态
+    newDevices[index].isSelected =!wasSelected;
+
+    // 根据状态变化更新选中数量
+    let selectedCount = this.data.selectedCount;
+    if (wasSelected) {
+        // 如果之前是选中状态，现在取消选中，数量减 1
+        selectedCount--;
+    } else {
+        // 如果之前是未选中状态，现在选中，数量加 1
+        selectedCount++;
+    }
+    
+    // 根据选中的数量判断是否为全选
+    let isSelectedAll = this.data.isSelectedAll;
+    if (selectedCount == devices.length) {
+      isSelectedAll = true;
+    }
+    else {
+      isSelectedAll = false;
+    }
+
+    this.setData({
+        devices: newDevices,
+        selectedCount,
+        isSelectedAll,
     });
   },
 
@@ -123,18 +204,4 @@ Page({
       }
     });
   },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
 })
