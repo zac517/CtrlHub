@@ -2,11 +2,12 @@
   <view class="header">
     <text class="title">设备列表</text>
     <view class="add-button"><icon class="iconfont icon-add"/></view>
-    <view class="menu-button"><icon class="iconfont icon-menu"/></view>
+    <view class="menu-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
   </view>
   <view class="list">
-    <view wx:for="{{devices}}" wx:key="index" class="deviceCard">
+    <view wx:for="{{devices}}" wx:key="index" class="deviceCard {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="startSelect">
         <text class="deviceName" >{{item.name}}</text>
+        <checkbox class="deviceCheck {{isOnSelect ? 'appear' : 'disappear'}}" value=""/>
     </view>
   </view>
 </view>
