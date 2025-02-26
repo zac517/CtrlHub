@@ -1,9 +1,10 @@
 /**app.wxss**/
 .container {
   padding: 30px;
-  background-color: #f3f5f8;
+  background-color: var(--background-color);
   height: 100vh;
   box-sizing: border-box;
   --theme-color: #489af8;
   --black: #333333;
+  --background-color: #f3f5f8;
 }
