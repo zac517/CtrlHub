@@ -1,22 +1,29 @@
 <view class="container">
-  <view class="header">
-    <text class="title {{isOnSelect ? 'disappear' : 'appear'}}">设备列表</text>
-    <view class="add-button {{isOnSelect ? 'disappear' : 'appear'}}"><icon class="iconfont icon-add"/></view>
-    <view class="menu-button {{isOnSelect ? 'disappear' : 'appear'}}" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
-    <view class="select-all {{isOnSelect && !isSelectedAll ? 'appear' : 'disappear'}}" bind:tap="selectAll">全选</view>
-    <view class="select-all {{isOnSelect && isSelectedAll ? 'appear' : 'disappear'}}" bind:tap="cancelSelectAll">取消全选</view>
-    <view class="hint {{isOnSelect ? 'appear' : 'disappear'}}">已选择<text class="hint-number">{{selectedCount}}</text>项</view>
-    <view class="cancel {{isOnSelect ? 'appear' : 'disappear'}}" bind:tap="cancelSelect">取消</view>
+  <view class="header {{isOnSelect ? 'disappear' : 'appear'}}">
+    <text class="title">设备列表</text>
+    <view class="add-button"><icon class="iconfont icon-add"/></view>
+    <view class="menu-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
   </view>
-  <checkbox-group bindchange="handleCheckboxChange">
+  <view class="header {{isOnSelect ? 'appear' : 'disappear'}}">
+    <view class="select-all {{isSelectedAll ? 'disappear' : 'appear'}}" bind:tap="selectAll">全选</view>
+    <view class="select-all {{isSelectedAll ? 'appear' : 'disappear'}}" bind:tap="cancelSelectAll">取消全选</view>
+    <view class="hint">已选择<text class="hint-number">{{selectedCount}}</text>项</view>
+    <view class="cancel" bind:tap="cancelSelect">取消</view>
+  </view>
     <view class="list">
-      <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="startSelect" data-device="{{item}}">
+      <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="cardLongpress" data-device="{{item}}" bind:tap="cardTap">
           <text class="device-name" >{{item.name}}</text>
           <checkbox class="device-check {{isOnSelect ? 'appear' : 'disappear'}}" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
       </view>
     </view>
-  </checkbox-group>
   <view class="footer {{isOnSelect ? 'appear' : 'disappear'}}">
-
+    <view class="rename">
+      <icon class="iconfont icon-rename"></icon>
+      <text class="footer-text">重命名</text>
+    </view>
+    <view class="delete">
+      <icon class="iconfont icon-delete"></icon>
+      <text class="footer-text">删除</text>
+    </view>
   </view>
 </view>

@@ -62,27 +62,16 @@ Page({
 
   // 开始选择函数
   startSelect(e) {
-    console.log(e);
     console.log("开始选择");
     const devices = this.data.devices.map(device => ({
       ...device,
       isSelected: false
     }));
-
-    if (e.type === 'longpress') {
-        const longPressedDevice = e.currentTarget.dataset.device;
-        // 找到长按设备在 devices 数组中的索引
-        const index = this.data.devices.findIndex(device => device.deviceId === longPressedDevice.deviceId);
-        if (index!== -1) {
-            devices[index].isSelected = true;
-        }
-    }
-
     this.setData({
       devices,
       isOnSelect: true,
       isSelectedAll: false,
-      selectedCount: devices.filter(device => device.isSelected).length
+      selectedCount: 0,
     });
   },
 
@@ -133,28 +122,50 @@ Page({
 
   // 处理选中事件函数
   handleCheckboxChange(e) {
-    console.log(e.detail.value);
-    console.log(this.data.devices);
-    const selectedDeviceIds = e.detail.value;
+    const selectedDevice = e.currentTarget.dataset.device;
     const devices = this.data.devices;
     const newDevices = [...devices];
     let isSelectedAll = true;
+    let selectedCount = 0;
 
     // 遍历设备列表，更新每个设备的选中状态
     newDevices.forEach((device) => {
-        const isDeviceSelected = selectedDeviceIds.includes(device.deviceId);
-        device.isSelected = isDeviceSelected;
-
-        if (!isDeviceSelected) {
+        if (device.deviceId === selectedDevice.deviceId) {
+            // 找到当前点击的设备，切换其选中状态
+            device.isSelected = !device.isSelected;
+        }
+        if (device.isSelected) {
+            selectedCount++;
+        } else {
             isSelectedAll = false;
         }
     });
 
     this.setData({
         devices: newDevices,
-        selectedCount: selectedDeviceIds.length,
+        selectedCount,
         isSelectedAll
     });
+  },
+
+  // 卡片长按事件函数
+  cardLongpress(e) {
+    wx.vibrateShort({
+      type: "light",
+      success: () => {
+        if (!this.data.isOnSelect) {
+          this.startSelect();
+        }
+        this.handleCheckboxChange(e);
+      }
+    });
+  },
+
+  // 卡牌点击事件函数
+  cardTap(e) {
+    if (this.data.isOnSelect) {
+      this.handleCheckboxChange(e);
+    }
   },
 
   /**
@@ -203,7 +214,12 @@ Page({
   onPullDownRefresh() {
     wx.stopPullDownRefresh({
       success: () => {
-        this.test();
+        wx.vibrateShort({
+          type: "light",
+          success: () => {
+            this.test();
+          }
+        });
       }
     });
   },
