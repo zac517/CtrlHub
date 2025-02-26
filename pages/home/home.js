@@ -12,103 +12,65 @@ Page({
         deviceId: "AAAA",
         UUID: "AAAA",
         isOnline: false,
+        isSelected: false,
       },
       {
         name: "台灯2",
         deviceId: "BBBB",
         UUID: "BBBB",
         isOnline: true,
+        isSelected: false,
       },
       {
         name: "台灯3",
         deviceId: "CCCC",
         UUID: "CCCC",
         isOnline: true,
+        isSelected: false,
       },
-      {
-        name: "台灯1",
-        deviceId: "AAAA",
-        UUID: "AAAA",
-        isOnline: false,
-      },
-      {
-        name: "台灯2",
-        deviceId: "BBBB",
-        UUID: "BBBB",
-        isOnline: true,
-      },
-      {
-        name: "台灯3",
-        deviceId: "CCCC",
-        UUID: "CCCC",
-        isOnline: true,
-      },
-      {
-        name: "台灯1",
-        deviceId: "AAAA",
-        UUID: "AAAA",
-        isOnline: false,
-      },
-      {
-        name: "台灯2",
-        deviceId: "BBBB",
-        UUID: "BBBB",
-        isOnline: true,
-      },
-      {
-        name: "台灯3",
-        deviceId: "CCCC",
-        UUID: "CCCC",
-        isOnline: true,
-      },
-      {
-        name: "台灯1",
-        deviceId: "AAAA",
-        UUID: "AAAA",
-        isOnline: false,
-      },
-      {
-        name: "台灯2",
-        deviceId: "BBBB",
-        UUID: "BBBB",
-        isOnline: true,
-      },
-      {
-        name: "台灯3",
-        deviceId: "CCCC",
-        UUID: "CCCC",
-        isOnline: true,
-      },
-      {
-        name: "台灯1",
-        deviceId: "AAAA",
-        UUID: "AAAA",
-        isOnline: false,
-      },
-      {
-        name: "台灯2",
-        deviceId: "BBBB",
-        UUID: "BBBB",
-        isOnline: true,
-      },
-      {
-        name: "台灯3",
-        deviceId: "CCCC",
-        UUID: "CCCC",
-        isOnline: true,
-      },
-    ]
+    ],
+    isOnSelect: false,
+    selectedCount: 0,
   },
 
-  add(){
-    this.animate('.container', [
-        { opacity: 1.0 },
-        { opacity: 0.0 },
-      ], 100, function () {
-        wx.redirectTo({
-          url: '/pages/add/add'
-        });
-      }.bind(this))
+  test() {
+    console.log("设备列表随机测试");
+    // 随机生成 0 到 12 之间的设备数量
+    const deviceCount = Math.floor(Math.random() * 13);
+    const newDevices = [];
+    for (let i = 0; i < deviceCount; i++) {
+        const device = {
+            // 按规律生成设备名称
+            name: `台灯${i + 1}`,
+            // 按规律生成设备 ID 和 UUID
+            deviceId: String.fromCharCode(65 + Math.floor(i / 26)).repeat(4),
+            UUID: String.fromCharCode(65 + Math.floor(i / 26)).repeat(4),
+            // 随机赋值 isOnline
+            isOnline: Math.random() > 0.5,
+            // 新增参数，表示设备是否被选中，默认值为 false
+            isSelected: false
+        };
+        newDevices.push(device);
+    }
+    // 更新 data 中的 devices 列表
+    this.setData({
+      devices: newDevices,
+      isOnSelect: false,
+      selectedCount: 0,
+    });
+  },
+
+  startSelect() {
+    console.log("开始选择");
+    const devices = this.data.devices.map(device => ({
+      ...device,
+      isSelected: false
+    }));
+    this.setData({
+      devices,
+      isOnSelect: true,
+      selectedCount: 0
+    });
   },
 
   /**
@@ -155,7 +117,11 @@ Page({
    * 页面相关事件处理函数--监听用户下拉动作
    */
   onPullDownRefresh() {
-
+    wx.stopPullDownRefresh({
+      success: () => {
+        this.test();
+      }
+    });
   },
 
   /**
