@@ -9,10 +9,10 @@
 }
 
 .title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--black);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .add-button, .menu-button {
@@ -45,7 +45,7 @@
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   column-gap: 15px;
   row-gap: 15px;
-  grid-auto-rows: 130px;
+  grid-auto-rows: max(18%, 120px);
   display: grid;
 }
 
@@ -58,12 +58,13 @@
 
 .device-name {
   font-size: 15px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .inactive {
   background-color: rgba(255, 255, 255, 0.3);
   color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .disappear {
@@ -94,11 +95,16 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked {
   color: white;
 }
 
+checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .select-all, .cancel, .hint {
   display: inline-block;
   font-weight: 600;
   font-size: 17px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .select-all, .cancel {
@@ -122,15 +128,46 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked {
 
 .hint-number {
   letter-spacing: 0;
-  margin:0 0.2em 0 0.1em;
+  margin: 0 0.15em 0 0.1em;
 }
 
 .footer {
-  height: 64px;
-  width: calc(100% - 60px);
-  background-color: white;
+  height: 72px;
+  width: 100%;
   position: fixed;
-  bottom: 30px;
-  border-radius: 15px;
-  border: 1px solid  rgba(0, 0, 0, 0.1);
+  bottom: 60px;
+  left: 0;
+}
+
+.rename, .delete {
+  height: 72px;
+  background-color: white;
+  width: 72px;
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.rename {
+  left: 0;
+  border-radius: 0 15px 15px 0;
+}
+
+.delete {
+  right: 0;
+  border-radius: 15px 0 0 15px;
+}
+
+.footer-text {
+  width: 100%;
+  display: block;
+  text-align: center;
+  font-size: 12px;
+}
+
+.icon-rename, .icon-delete {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  margin-top: 14px;
+  color: var(--black);
 }
