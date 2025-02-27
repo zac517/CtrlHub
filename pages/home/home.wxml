@@ -1,27 +1,27 @@
-<view class="container">
-  <view class="header {{isOnSelect ? 'disappear' : 'appear'}}">
+<view class="container {{isOnSelect ? 'is-on-select' : ''}} {{isSelectedAll ? 'is-select-all' : ''}}">
+  <view class="header">
     <text class="title">设备列表</text>
     <view class="add-button"><icon class="iconfont icon-add"/></view>
     <view class="menu-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
   </view>
-  <view class="header {{isOnSelect ? 'appear' : 'disappear'}}">
-    <view class="select-all {{isSelectedAll ? 'disappear' : 'appear'}}" bind:tap="selectAll">全选</view>
-    <view class="select-all {{isSelectedAll ? 'appear' : 'disappear'}}" bind:tap="cancelSelectAll">取消全选</view>
+  <view class="header-on-select">
+    <view class="select-all" bind:tap="selectAll">全选</view>
+    <view class="cancel-select-all" bind:tap="cancelSelectAll">取消全选</view>
     <view class="hint">已选择<text class="hint-number">{{selectedCount}}</text>项</view>
     <view class="cancel" bind:tap="cancelSelect">取消</view>
   </view>
-    <view class="list">
-      <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? 'active' : 'inactive'}}" bind:longpress="cardLongpress" data-device="{{item}}" bind:tap="cardTap">
-          <text class="device-name" >{{item.name}}</text>
-          <checkbox class="device-check {{isOnSelect ? 'appear' : 'disappear'}}" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
-      </view>
+  <view class="list">
+    <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? '' : 'inactive'}}" bind:longpress="cardLongpress" data-device="{{item}}" bind:tap="cardTap">
+        <text class="device-name" >{{item.name}}</text>
+        <checkbox class="device-check" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
     </view>
-  <view class="footer {{isOnSelect ? 'appear' : 'disappear'}}">
-    <view class="rename">
+  </view>
+  <view class="footer">
+    <view class="rename {{selectedCount == 1 ? '' : 'footer-inactive'}}" bind:tap="{{selectedCount == 1 ? 'renameDevice' : ''}}">
       <icon class="iconfont icon-rename"></icon>
       <text class="footer-text">重命名</text>
     </view>
-    <view class="delete">
+    <view class="delete {{selectedCount > 0 ? '' : 'footer-inactive'}}" bind:tap="{{selectedCount > 0 ? 'deleteSelected' : ''}}">
       <icon class="iconfont icon-delete"></icon>
       <text class="footer-text">删除</text>
     </view>

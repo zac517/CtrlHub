@@ -1,18 +1,29 @@
 @import "../../icon/icon.wxss";
 
-.header {
+.header, .header-on-select {
   width: 100%;
   margin-top: 70px;
-  position: relative;
   height: 40px;
   line-height: 40px;
+  position: relative;
+}
+
+.header-on-select {
+  display: none;
+}
+
+.is-on-select .header {
+  display: none;
+}
+
+.is-on-select .header-on-select {
+  display: block;
 }
 
 .title {
   font-size: 24px;
   font-weight: 600;
   color: var(--black);
-  letter-spacing: 0.05em;
 }
 
 .add-button, .menu-button {
@@ -38,15 +49,21 @@
 }
   
 .list {
-  height: calc(100vh - 190px);
-  border-radius: 10px;
+  max-height: calc(100vh - 160px);
+  border-radius: 10px 10px 0 0;
   margin-top: 20px;
   overflow: scroll;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   column-gap: 15px;
   row-gap: 15px;
-  grid-auto-rows: max(18%, 120px);
+  grid-auto-rows: max(15vh, 120px);
   display: grid;
+  padding-bottom: 30px;
+  box-sizing: border-box;
+}
+
+.is-on-select .list {
+  max-height: calc(100vh - 230px);
 }
 
 .device-card {
@@ -58,13 +75,20 @@
 
 .device-name {
   font-size: 15px;
-  letter-spacing: 0.05em;
 }
 
 .inactive {
   background-color: rgba(255, 255, 255, 0.3);
   color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.footer-inactive {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.footer-inactive .icon-delete, .footer-inactive .icon-rename {
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .disappear {
@@ -77,6 +101,11 @@
   bottom: 15px;
   width: 18px;
   height: 18px;
+  display: none;
+}
+
+.is-on-select .device-check {
+  display: inline-block;
 }
 
 checkbox .wx-checkbox-input {
@@ -100,24 +129,22 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   font-weight: 600;
 }
 
-.select-all, .cancel, .hint {
-  display: inline-block;
+.select-all, .cancel-select-all, .cancel, .hint {
   font-weight: 600;
   font-size: 17px;
-  letter-spacing: 0.05em;
 }
 
-.select-all, .cancel {
+.select-all, .cancel, .hint {
+  display: inline-block;
+}
+
+.cancel-select-all {
+  display: none;
+}
+
+.select-all, .cancel-select-all, .cancel {
   color: var(--theme-color);
   position: absolute;
-}
-
-.select-all {
-  left: 0;
-}
-
-.cancel {
-  right: 0;
 }
 
 .hint {
@@ -126,35 +153,54 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   text-align: center;
 }
 
+.select-all, .cancel-select-all {
+  left: 0;
+}
+
+.cancel {
+  right: 0;
+}
+
+.is-select-all .cancel-select-all {
+  display: inline-block;
+}
+
+.is-select-all .select-all {
+  display: none;
+}
+
 .hint-number {
   letter-spacing: 0;
   margin: 0 0.15em 0 0.1em;
 }
 
 .footer {
-  height: 72px;
   width: 100%;
+  display: none;
   position: fixed;
-  bottom: 60px;
+  background-color: white;
+  height: 72px;
+  bottom: 0;
   left: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.is-on-select .footer {
+  display: block;
 }
 
 .rename, .delete {
   height: 72px;
-  background-color: white;
   width: 72px;
   position: absolute;
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .rename {
-  left: 0;
-  border-radius: 0 15px 15px 0;
+  left: 30px;
 }
 
 .delete {
-  right: 0;
-  border-radius: 15px 0 0 15px;
+  right: 30px;
 }
 
 .footer-text {
@@ -168,6 +214,6 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   width: 100%;
   text-align: center;
   font-size: 24px;
-  margin-top: 14px;
+  margin-top: 13px;
   color: var(--black);
 }

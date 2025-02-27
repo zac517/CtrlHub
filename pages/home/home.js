@@ -111,13 +111,23 @@ Page({
 
   // 删除选中设备的函数
   deleteSelected() {
-    const devices = this.data.devices.filter(device =>!device.isSelected);
-    const selectedCount = 0;
-    this.setData({
-      devices,
-      selectedCount,
-      isSelectedAll: false,
-    });
+    if (this.data.selectedCount > 0) {
+      wx.showModal({
+        title: '确认删除',
+        content: '确定要删除选中的设备吗？',
+        success: (res) => {
+          if (res.confirm) {
+            const devices = this.data.devices.filter(device =>!device.isSelected);
+            const selectedCount = 0;
+            this.setData({
+              devices,
+              selectedCount,
+              isSelectedAll: false,
+            });
+          }
+        }
+      });
+    }
   },
 
   // 处理选中事件函数
@@ -165,6 +175,37 @@ Page({
   cardTap(e) {
     if (this.data.isOnSelect) {
       this.handleCheckboxChange(e);
+    }
+  },
+
+  // 重命名函数
+  renameDevice() {
+    const selectedDevice = this.data.devices.find(device => device.isSelected);
+    if (selectedDevice) {
+      wx.showModal({
+        title: '重命名设备',
+        placeholderText: selectedDevice.name,
+        editable: true,
+        success: (res) => {
+          if (res.confirm) {
+            const newName = res.content;
+            if (newName) {
+              const newDevices = this.data.devices.map(device => {
+                if (device.deviceId === selectedDevice.deviceId) {
+                  return {
+                    ...device,
+                    name: newName
+                  };
+                }
+                return device;
+              });
+              this.setData({
+                devices: newDevices
+              });
+            }
+          }
+        }
+      });
     }
   },
 
