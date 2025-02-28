@@ -53,3 +53,4 @@
   transform: rotate(-10deg) translate(40px, 20px);
   color: rgba(0, 0, 0, 0.03);
 }
+
