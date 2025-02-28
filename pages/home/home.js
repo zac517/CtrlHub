@@ -32,7 +32,6 @@ Page({
   },
 
   test() {
-    console.log("设备列表随机测试");
     // 随机生成 0 到 12 之间的设备数量
     const deviceCount = Math.floor(Math.random() * 13);
     const newDevices = [];
@@ -57,7 +56,6 @@ Page({
       isSelectedAll: false,
       selectedCount: 0,
     });
-    console.log(this.data.devices);
   },
 
   // 开始选择函数
@@ -214,10 +212,8 @@ Page({
    */
   onLoad(options) {
     if (isBluetoothAdapterOpened()) {
-      console.log("a");
     }
     else {
-      console.log("b")
     }
   },
 
