@@ -1,5 +1,6 @@
 // pages/manufacturer/manufacturer.js
 Page({
+
   data: {
   },
 
@@ -8,12 +9,15 @@ Page({
     wx.redirectTo({
       url: '/pages/home/home',
     })
+
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad() {
+
+  onLoad(options) {
+
   },
 
   /**
@@ -58,10 +62,5 @@ Page({
 
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
 
-  }
 })
