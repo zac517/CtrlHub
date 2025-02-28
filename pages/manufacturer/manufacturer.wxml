@@ -1,13 +1,16 @@
 <view class="container">
   <view class="header">
-    <text class="title">设备列表</text>
-    <view class="add-button" bind:tap="selectManufacturer"><icon class="iconfont icon-add"/></view>
-    <view class="menu-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
+    <text class="title">选择设备品牌</text>
+    <view class="back-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
   </view>
   <view class="list">
-    <view wx:for="{{devices}}" wx:key="index" class="device-card {{item.isOnline ? '' : 'inactive'}}" bind:longpress="cardLongpress" data-device="{{item}}" bind:tap="cardTap">
-        <text class="device-name" >{{item.name}}</text>
-        <checkbox class="device-check" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
+    <view class="manu-card" bind:tap="cardTap">
+      <text class="manu-title">Lumina系列</text>
+      <view class="logo">Lumina</view>
+    </view>
+    <view class="manu-card" bind:tap="cardTap">
+      <text class="manu-title">敬请期待</text>
+      <view class="logo">More</view>
     </view>
   </view>
 </view>

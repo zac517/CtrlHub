@@ -3,29 +3,7 @@ import { isBluetoothAdapterOpened } from "../../utils/comm.js"
 
 Page({
   data: {
-    devices: [
-      {
-        name: "台灯1",
-        deviceId: "AAAA",
-        UUID: "AAAA",
-        isOnline: false,
-        isSelected: false,
-      },
-      {
-        name: "台灯2",
-        deviceId: "BBBB",
-        UUID: "BBBB",
-        isOnline: true,
-        isSelected: false,
-      },
-      {
-        name: "台灯3",
-        deviceId: "CCCC",
-        UUID: "CCCC",
-        isOnline: true,
-        isSelected: false,
-      },
-    ],
+    devices: [],
     isOnSelect: false,
     isSelectedAll: false,
     selectedCount: 0,
@@ -218,10 +196,9 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    if (isBluetoothAdapterOpened()) {
-    }
-    else {
-    }
+    this.setData({
+      devices: wx.getStorageSync('devices'),
+    });
   },
 
   /**
@@ -242,14 +219,15 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide() {
-
+    console.log("触发");
+    wx.setStorageSync('devices', this.data.devices);
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
   onUnload() {
-
+    wx.setStorageSync('devices', this.data.devices);
   },
 
   /**
@@ -262,6 +240,7 @@ Page({
           type: "light",
           success: () => {
             this.test();
+            
           }
         });
       }

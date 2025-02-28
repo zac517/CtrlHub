@@ -1,14 +1,9 @@
-@import "../../icon/icon.wxss";
-
-.header, .header-on-select {
+.header-on-select {
   width: 100%;
   margin-top: 80px;
   height: 40px;
   line-height: 40px;
   position: relative;
-}
-
-.header-on-select {
   display: none;
 }
 
