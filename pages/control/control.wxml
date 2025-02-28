@@ -1,0 +1,44 @@
+<!--pages/control/control.wxml-->
+<view class="toparea">
+    <!-- <image src="/image/6d6998f93005407dad229ee9346392d7.jpg"/> -->
+    <view class="textdesign">亮度：{{status.light}}</view>
+    <view class="textdesign">模式得得得：{{status.mode}}</view>
+    <view class="textdesign">wifi:{{status.wifi?'已连接':'未连接'}}</view>
+</view>
+<view class="bottomarea">
+    <view class="firstline">
+        <view class="openoff">
+            <view bind:tap="openoff" id="buttondis-open" class="buttondis-open"  bindtouchstart="openOnPressStart" bindtouchend="openOnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                <image  src="/image/switch.png" class="openoff-img"/>
+            </view>
+        </view>
+        <view class="openoff">
+            <view bind:tap="wificontrol" id="buttondis-wifi" class="buttondis-wifi"  bindtouchstart="wifiOnPressStart" bindtouchend="wifiOnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                <image src="/image/WIFI.png" class="openoff-img"/>
+            </view>
+        </view>
+        <!-- <view class="bottom-line"></view> -->
+    </view>
+    <view class="secondline">
+        <view bind:tap="lightreduce" id="button-reduce" class="button-reduce" bindtouchstart="reduceOnPressStart" bindtouchend="reduceOnPressEnd" style="{{reduceisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}"> 
+            <image src="/image/减.png" class="secondline-button-img"/>
+        </view>
+        <view class="button-mid">
+        <text class="secondline-button-text">亮度</text>
+        </view>
+        <view bind:tap="lightplus" id="button-plus" class="button-plus" bindtouchstart="plusOnPressStart" bindtouchend="plusOnPressEnd" style="{{plusisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+            <image src="/image/加.png" class="secondline-button-img"/>
+        </view>
+    </view>
+    <view class="thirdline">
+        <view bind:tap="cold" id="thirdline-cold" class="thirdline-cold" bindtouchstart="ColdOnPressStart" bindtouchend="ColdOnPressEnd" style="{{ColdisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+            <text class="thirdline-text">冷色</text>
+        </view>         
+        <view bind:tap="mid" id="thirdline-mid" class="thirdline-mid" bindtouchstart="MidOnPressStart" bindtouchend="MidOnPressEnd" style="{{MidisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+            <text class="thirdline-text">均衡</text>
+        </view>
+        <view bind:tap="hot" id="thirdline-hot" class="thirdline-hot" bindtouchstart="HotOnPressStart" bindtouchend="HotOnPressEnd" style="{{HotisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+            <text class="thirdline-text">暖色</text>
+        </view>
+    </view>
+</view>
