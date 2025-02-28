@@ -1,7 +1,8 @@
 {
   "pages": [
     "pages/home/home",
-    "pages/add/add"
+    "pages/add/add",
+    "pages/manufacturer/manufacturer"
   ],
   "window": {
     "navigationStyle": "custom"

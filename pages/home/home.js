@@ -207,6 +207,13 @@ Page({
     }
   },
 
+  // 跳转到设备选择函数
+  selectManufacturer() {
+    wx.redirectTo({
+      url: `/pages/manufacturer/manufacturer?devices=${this.data.devices}`,
+    })
+  },
+
   /**
    * 生命周期函数--监听页面加载
    */
