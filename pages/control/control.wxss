@@ -1,0 +1,183 @@
+.toparea{
+    background-color: #f3f3f3;
+    height:64vh;
+    display:flex;
+    padding: 40px;
+}
+.textdesign{
+    font-size: 20px;
+
+}
+/* .firstline{
+    width:100%;
+    display:flex;
+    height:200rpx;
+}
+.openoff{
+    width:20%;
+    height:200rpx;
+    align-items: center;
+    justify-content: center;
+}
+.wificontrol{
+    width:50%;
+    height:200rpx;
+    justify-content: center;
+    align-items: center;
+} */
+
+.bottomarea{
+    background-color: #ddd;
+    padding: 0;
+    margin: 0;
+}
+/* 父容器 */
+.firstline {
+    width: 100%;
+    height: 10vh;
+    padding: 0 ;
+    margin: 0;
+    position: relative;
+}
+
+.openoff {
+    width: 49.5%;
+    height: 10vh;
+    /* border-bottom: 1px solid #ddd; */
+    padding: 0rpx ;
+    border: none;
+    display: inline-block;
+    /* background-color: yellow; */
+}
+
+.buttondis-open{
+    height:100%;
+    width:100%;
+    padding:0 ; 
+    border: none; 
+    /* justify-content: space-between; */
+    /* align-items: center; */
+    /* justify-content: center; 
+    align-items: center; */
+    position: relative;
+    margin-right: 3rpx;
+    background-color:#ffffff;
+    /* border-left: 1px solid #ddd;
+    border-right: 2px solid #ddd; 
+    border-bottom: 3px solid #ddd;  */
+}
+
+.buttondis-wifi{
+    height:100%;
+    width:100%;
+    padding:0 ; 
+    border: none; 
+    /* justify-content: space-between; */
+    /* align-items: center; */
+    /* justify-content: center; 
+    align-items: center; */
+    position: relative;
+    margin-left: 3rpx;
+    background-color:#ffffff;
+    /* border-left: 1px solid #ddd;
+    border-right: 2px solid #ddd; 
+    border-bottom: 3px solid #ddd;  */
+}
+
+.openoff-img{
+    width:5vh;
+    height:5vh;
+    position: absolute;
+    top: 23%;
+    left: 40%;
+}
+.secondline {
+    width: 100%;
+    height: 8vh;
+    padding: 0 ;
+    margin: 0;
+    position: relative;
+    margin-top: 5rpx;
+}
+
+.button-plus{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+    margin-left: 3rpx;
+}
+
+.button-reduce{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+    margin-right: 3rpx;
+}
+
+.button-mid{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+}
+
+.secondline-button-img{
+    width:60rpx;
+    height:60rpx;
+    position: absolute;
+    top:30%;
+    left: 35%;
+}
+
+.secondline-button-text{
+    font-size: 33rpx;
+    position: absolute;
+    top: 33%;
+    left: 37%;
+}
+.thirdline {
+    width: 100%;
+    height: 8vh;
+    padding: 0 ;
+    margin: 0;
+    position: relative;
+    margin-top: 5rpx;
+    margin-bottom: 3rpx;
+}
+.thirdline-cold{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+    margin-right: 3rpx;
+}
+
+.thirdline-hot{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+    margin-left: 3rpx;
+}
+
+.thirdline-mid{
+    height:100%;
+    width:33.1%;
+    position: relative;
+    display: inline-block;
+    background-color: #ffffff;
+}
+
+.thirdline-text{
+    font-size: 30rpx;
+    position: absolute;
+    top: 35%;
+    left: 37%;
+}

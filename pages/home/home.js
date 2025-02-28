@@ -240,7 +240,6 @@ Page({
           type: "light",
           success: () => {
             this.test();
-            
           }
         });
       }
