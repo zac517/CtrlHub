@@ -131,6 +131,7 @@ Page({
         devices: newDevices,
         selectedCount,
         isSelectedAll
+
     });
   },
 
@@ -146,6 +147,34 @@ Page({
       }
     });
   },
+
+  // 卡片长按事件函数
+  cardLongpress(e) {
+    wx.vibrateShort({
+      type: "light",
+      success: () => {
+        if (!this.data.isOnSelect) {
+          this.startSelect();
+        }
+        this.handleCheckboxChange(e);
+      }
+    });
+  },
+
+  // 卡片长按事件函数
+  cardLongpress(e) {
+    wx.vibrateShort({
+      type: "light",
+      success: () => {
+        if (!this.data.isOnSelect) {
+          this.startSelect();
+        }
+        this.handleCheckboxChange(e);
+      }
+    });
+  },
+
+
 
   // 卡牌点击事件函数
   cardTap(e) {
@@ -196,12 +225,32 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
+
     this.setData({
       devices: wx.getStorageSync('devices'),
     });
+
+
+
+
+    if (isBluetoothAdapterOpened()) {
+    }
+    else {
+    }
+
+    this.setData({
+      devices: wx.getStorageSync('devices'),
+    });
+
+
+    this.setData({
+      devices: wx.getStorageSync('devices'),
+    });
+
+
   },
 
-  
+
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
