@@ -1,3 +1,5 @@
+@import "../../font/font.wxss";
+
 .title {
   font-size: 17px;
   font-weight: 600;
@@ -37,23 +39,20 @@
   grid-auto-rows: max(15vh, 120px);
 }
 
-.manu-card {
-  background-color: white;
-  border-radius: 10px;
-  padding: 13px 15px;
-  position: relative;
-  overflow: hidden;
-}
-
 .logo {
   position: absolute;
   font-size: 80px;
-  font-family: fantasy;
-  transform: rotate(-10deg) translate(30px, 35px);
-  transform-origin: top left;
-  color: var(--background-color);
+  font-family: Impact;
+  font-style: italic;
+  bottom: 0;
+  right: 0;
+  line-height: 50px;
+  width: 140px;
+  background-image: linear-gradient(to left top, white, #e5e5e5);
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
-.manu-title {
-  font-size: 15px;
+.inactive .logo {
+  opacity: 0.3;
 }

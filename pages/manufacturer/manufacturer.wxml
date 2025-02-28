@@ -4,12 +4,12 @@
     <view class="back-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
   </view>
   <view class="list">
-    <view class="manu-card" bind:tap="cardTap">
-      <text class="manu-title">Lumina系列</text>
+    <view class="card" bind:tap="cardTap">
+      <text class="card-title">Lumina系列</text>
       <view class="logo">Lumina</view>
     </view>
-    <view class="manu-card" bind:tap="cardTap">
-      <text class="manu-title">敬请期待</text>
+    <view class="card inactive">
+      <text class="card-title">敬请期待</text>
       <view class="logo">More</view>
     </view>
   </view>
