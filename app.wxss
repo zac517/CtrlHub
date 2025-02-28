@@ -1,4 +1,5 @@
-/**app.wxss**/
+@import "icon/icon.wxss";
+
 .container {
   padding: 20px;
   background-color: var(--background-color);
@@ -12,4 +13,12 @@
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+.header {
+  width: 100%;
+  margin-top: 80px;
+  height: 40px;
+  line-height: 40px;
+  position: relative;
 }
