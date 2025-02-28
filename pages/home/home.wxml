@@ -1,8 +1,8 @@
 <view class="container {{isOnSelect ? 'is-on-select' : ''}} {{isSelectedAll ? 'is-select-all' : ''}}">
   <view class="header">
     <text class="title">设备列表</text>
-    <view class="add-button" bind:tap="selectManufacturer"><icon class="iconfont icon-add"/></view>
-    <view class="menu-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
+    <view class="add-button icon-button" bind:tap="selectManufacturer"><icon class="iconfont icon-add"/></view>
+    <view class="menu-button icon-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
   </view>
   <view class="header-on-select">
     <view class="select-all" bind:tap="selectAll">全选</view>

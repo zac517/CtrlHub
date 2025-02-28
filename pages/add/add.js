@@ -8,6 +8,13 @@ Page({
 
   },
 
+  // 返回制造商选择函数
+  backToManu() {
+    wx.redirectTo({
+      url: '/pages/manufacturer/manufacturer',
+    })
+  },
+
   /**
    * 生命周期函数--监听页面加载
    */

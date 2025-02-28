@@ -9,7 +9,12 @@ Page({
     wx.redirectTo({
       url: '/pages/home/home',
     })
+  },
 
+  goToAdd() {
+    wx.redirectTo({
+      url: '/pages/add/add',
+    })
   },
 
   /**
