@@ -47,11 +47,13 @@
 
 .logo {
   position: absolute;
-  font-weight: 600;
   font-size: 80px;
   font-family: fantasy;
-  transform: rotate(-10deg) translate(40px, 20px);
-  color: rgba(0, 0, 0, 0.03);
+  transform: rotate(-10deg) translate(30px, 35px);
+  transform-origin: top left;
+  color: var(--background-color);
 }
 
-
+.manu-title {
+  font-size: 15px;
+}
