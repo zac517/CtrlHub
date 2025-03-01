@@ -35,93 +35,31 @@ Page({
   cold(){},
   mid(){},
 
-openOnPressStart: function(e) {
+OnPressStart: function(e) {
     this.setData({
         openisPressed: true
     });
+    wx.vibrateShort();
 },
-openOnPressEnd: function(e) {
+OnPressEnd: function(e) {
     this.setData({
         openisPressed: false
     });
+    wx.vibrateShort();
 },
 
-wifiOnPressStart: function(e) {
-    this.setData({
-        wifiisPressed: true
-    });
-},
-wifiOnPressEnd: function(e) {
-    this.setData({
-        wifiisPressed: false
-    });
-},
 
-reduceOnPressStart: function(e) {
-    this.setData({
-        reduceisPressed: true
-    });
-},
-reduceOnPressEnd: function(e) {
-    this.setData({
-        reduceisPressed: false
-    });
-},
-
-plusOnPressStart: function(e) {
-    this.setData({
-        plusisPressed: true
-    });
-},
-plusOnPressEnd: function(e) {
-    this.setData({
-        plusisPressed: false
-    });
-},
-
-ColdOnPressStart: function(e) {
-    this.setData({
-        ColdisPressed: true
-    });
-},
-ColdOnPressEnd: function(e) {
-    this.setData({
-        ColdisPressed: false
-    });
-},
-
-MidOnPressStart: function(e) {
-    this.setData({
-        MidisPressed: true
-    });
-},
-MidOnPressEnd: function(e) {
-    this.setData({
-        MidisPressed: false
-    });
-},
-
-HotOnPressStart: function(e) {
-    this.setData({
-        HotisPressed: true
-    });
-},
-HotOnPressEnd: function(e) {
-    this.setData({
-        HotisPressed: false
-    });
-},
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
       
-        const configurename = JSON.parse(decodeURIComponent(options.name));
-        console.log("复杂数据：", configurename);
-        this.setData({
-          name: configurename
-        });
+        // const configurename = JSON.parse(decodeURIComponent(options.name));
+        // console.log("复杂数据：", configurename);
+        // this.setData({
+        //   name: configurename
+        // });
   },
 
   /**
