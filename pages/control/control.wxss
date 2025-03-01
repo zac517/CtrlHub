@@ -1,12 +1,43 @@
 .toparea{
     background-color: #f3f3f3;
+    width:100%;
     height:64vh;
-    display:flex;
-    padding: 40px;
+    /* display:flex; */
+    padding: 4.5vh;
+    position: relative;
+    display:inline-block;
 }
-.textdesign{
-    font-size: 20px;
 
+.light{
+    width:240rpx;
+    height:240rpx;
+    position: absolute;
+    left:30%;
+    /* right:30%; */
+    top:40%
+}
+
+.top{
+    /* margin-top: auto; */
+    left:0;
+    bottom:0;
+    height:30px;
+    width:100%;
+    position: absolute;
+    /* display:inline-block; */
+    /* background-color:red; */
+}
+
+/* .autobutton{}
+
+.autotext{} */
+
+.textdesign{
+    /* position: relative; */
+    font-size: 15px;
+    display:inline-block;
+    /* background-color: royalblue; */
+    margin: 5px 35px;
 }
 /* .firstline{
     width:100%;

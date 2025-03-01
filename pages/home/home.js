@@ -153,6 +153,12 @@ Page({
     if (this.data.isOnSelect) {
       this.handleCheckboxChange(e);
     }
+    else {
+      wx.redirectTo({
+        url: '/pages/control/control',
+      })
+
+    }
   },
 
   // 重命名函数
@@ -200,6 +206,22 @@ Page({
     this.setData({
       devices: wx.getStorageSync('devices'),
     });
+<<<<<<< Updated upstream
+=======
+
+
+
+
+    if (isBluetoothAdapterOpened()) {
+    }
+    else {
+    }
+
+    this.setData({
+      devices: wx.getStorageSync('devices'),
+    });
+
+>>>>>>> Stashed changes
   },
 
 
