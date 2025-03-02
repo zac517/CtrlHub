@@ -9,11 +9,7 @@
   right: 0;
   line-height: 50px;
   width: 140px;
-  background-image: linear-gradient(to left top, white, #e5e5e5);
+  background-image: linear-gradient(to left top, white, #eeeeee);
   -webkit-background-clip: text;
   color: transparent;
-}
-
-.inactive .logo {
-  opacity: 0.5;
 }

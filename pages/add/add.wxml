@@ -3,4 +3,21 @@
     <text class="title">添加设备</text>
     <view class="back-button icon-button" bind:tap="backToManu"><icon class="iconfont icon-back"/></view>
   </view>
+  <view class="content">
+    <view>
+      <text class="add-title">选择设备</text>
+      <picker class="device-input {{!bluetoothAvailable ? 'ban' : ''}}" 
+      bindchange="onSelectDevice" bind:tap="{{!bluetoothAvailable ? 'onPickerTap' : ''}}" 
+      disabled="{{!bluetoothAvailable}}"
+      range="{{devices}}" range-key="name">
+        <view>{{selectedDevice ? selectedDevice.name : '请选择'}}</view>
+      </picker>
+    </view>
+    <view class="{{selectedDevice ? '' : 'disappear'}}">
+      <text class="add-title">设备名称</text>
+      <input placeholder="请输入" model:value="{{newName}}" class="device-input"/>
+    </view>
+    <text class="add-hint">*请开启手机蓝牙并保持在设备附近</text>
+  </view>
+  <view class="complete" bind:tap="addDevices">完成</view>
 </view>

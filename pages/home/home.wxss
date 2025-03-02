@@ -33,7 +33,7 @@
 }
 
 .iconfont.icon-add, .iconfont.icon-menu {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .is-on-select .list {
