@@ -195,29 +195,10 @@ Page({
       });
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad(options) {
-    this.setData({
-        devices: wx.getStorageSync('devices'),
-    });
-<<<<<<< Updated upstream
-=======
-
-
-
-
-    if (isBluetoothAdapterOpened()) {
-    }
-    else {
-    }
-
     this.setData({
       devices: wx.getStorageSync('devices'),
     });
-
->>>>>>> Stashed changes
   },
 
   onHide() {
