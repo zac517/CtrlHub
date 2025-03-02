@@ -77,43 +77,29 @@
     /* border-bottom: 1px solid #ddd; */
     padding: 0rpx ;
     border: none;
-    display: inline-block;
     /* background-color: yellow; */
+    display: inline-block
 }
 
-.buttondis-open{
+.buttonopen{
     height:100%;
     width:100%;
     padding:0 ; 
     border: none; 
-    /* justify-content: space-between; */
-    /* align-items: center; */
-    /* justify-content: center; 
-    align-items: center; */
     position: relative;
-    margin-right: 3rpx;
+    /* margin-right: 3rpx; */
     background-color:#ffffff;
-    /* border-left: 1px solid #ddd;
-    border-right: 2px solid #ddd; 
-    border-bottom: 3px solid #ddd;  */
 }
 
-.buttondis-wifi{
+/* .buttondis-wifi{
     height:100%;
     width:100%;
     padding:0 ; 
     border: none; 
-    /* justify-content: space-between; */
-    /* align-items: center; */
-    /* justify-content: center; 
-    align-items: center; */
     position: relative;
     margin-left: 3rpx;
     background-color:#ffffff;
-    /* border-left: 1px solid #ddd;
-    border-right: 2px solid #ddd; 
-    border-bottom: 3px solid #ddd;  */
-}
+} */
 
 .openoff-img{
     width:5vh;
@@ -123,15 +109,27 @@
     left: 40%;
 }
 .secondline {
+    background-color: white;
     width: 100%;
-    height: 8vh;
-    padding: 0 ;
+    height: 5.5vh;
+    padding:20rpx;
     margin: 0;
     position: relative;
     margin-top: 5rpx;
+
 }
 
-.button-plus{
+.firsttext{
+    display: inline-block;
+}
+
+.slider{
+    position: absolute;
+    width:77%;
+    display:inline-block;
+}
+
+/* .button-plus{
     height:100%;
     width:33.1%;
     position: relative;
@@ -170,17 +168,30 @@
     position: absolute;
     top: 33%;
     left: 37%;
-}
+} */
 .thirdline {
     width: 100%;
-    height: 8vh;
-    padding: 0 ;
+    background-color: white;
+    /* height: 8vh;
+    padding: 0 ; */
+    height: 5.5vh;
+    padding:20rpx;
     margin: 0;
     position: relative;
-    margin-top: 5rpx;
+    /* margin-top: 5rpx; */
     margin-bottom: 3rpx;
 }
-.thirdline-cold{
+.secondtext{
+    display: inline-block;
+}
+
+.lighttem{
+    width:72%;
+    display:inline-block;
+    /* position: absolute; */
+    margin-left: 60rpx;
+}
+/* .thirdline-cold{
     height:100%;
     width:33.1%;
     position: relative;
@@ -211,4 +222,7 @@
     position: absolute;
     top: 35%;
     left: 37%;
-}
+} */
+/* .lighttem .wx-slider-track  {
+    background: linear-gradient(to right, #9bbcff 0%, #ffffff 50%, #ff3300 100%);
+  } */
