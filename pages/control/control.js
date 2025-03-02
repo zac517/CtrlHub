@@ -6,45 +6,92 @@ Page({
    */
   data: {
         name:"",
-        status:{light:0,mode:0,wifi:false},
+        status:{light:0,mode:0,wifi:false, open:true},
         openisPressed:false,
         wifiisPressed:false,
-        plusisPressed:false,
-        reduceisPressed:false,
-        MidisPressed:false,
-        HotisPressed:false,
-        ColdisPressed:false
+        // plusisPressed:false,
+        // reduceisPressed:false,
+        // MidisPressed:false,
+        // HotisPressed:false,
+        // ColdisPressed:false
     },
 
-  openoff(){
-    console.log("点击")
-  },
+    sliderChanging:function(e)
+    {
+        // console.log(e.detail.value)
+        const currentStatus = this.data.status;
+        const newStatus = {
+            ...currentStatus, // 展开当前 status 对象，保留原有属性
+            light:e.detail.value 
+        };
+        this.setData({
+            status: newStatus
+        });
+    },
+    sliderChangingtem:function(e)
+    {
+        // console.log(e.detail.value)
+        const currentStatus = this.data.status;
+        const newStatus = {
+            ...currentStatus, // 展开当前 status 对象，保留原有属性
+            mode:e.detail.value 
+        };
+        this.setData({
+            status: newStatus
+        });
+    },
+
+    openoff(){
+        console.log("点击开关");
+        const currentStatus = this.data.status;
+        const newStatus = {
+            ...currentStatus, // 展开当前 status 对象，保留原有属性
+            open:!currentStatus.open
+        };
+        this.setData({
+            status: newStatus
+        });
+    },
 
   wificontrol(){
-    console.log("点击")
+    console.log("点击wifi开关")
   },
 
-  lightreduce(){
+//   lightreduce(){
 
-  },
+//   },
 
-  lightplus(){
+//   lightplus(){
 
-  },
+//   },
 
-  cold(){},
-  mid(){},
+//   cold(){},
+//   mid(){},
 
 OnPressStart: function(e) {
-    this.setData({
-        openisPressed: true
-    });
+    if(e.changedTouches[0].screenX>=200){ 
+        this.setData({
+            wifiisPressed: true
+        });
+    }
+    else{
+        this.setData({
+            openisPressed: true
+        });
+    }
     wx.vibrateShort();
 },
 OnPressEnd: function(e) {
-    this.setData({
-        openisPressed: false
-    });
+    if(e.changedTouches[0].screenX>=200){ 
+        this.setData({
+            wifiisPressed: false
+        });
+    }
+    else{
+        this.setData({
+            openisPressed: false
+        });
+    }
     wx.vibrateShort();
 },
 

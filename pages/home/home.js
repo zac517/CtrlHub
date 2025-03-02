@@ -201,6 +201,21 @@ Page({
     });
   },
 
+
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+
+  },
+
   onHide() {
       console.log("触发");
       wx.setStorageSync('devices', this.data.devices);

@@ -13,19 +13,19 @@
 <view class="bottomarea">
     <view class="firstline">
         <view class="openoff">
-            <view bind:tap="openoff" id="buttondis-open" class="buttondis-open"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                <image  src="/image/switch.png" class="openoff-img"/>
+            <view bind:tap="openoff" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                <image  src="{{status.open ? '/image/switch1.png' : '/image/switch.png'}}" class="openoff-img"/>
             </view>
         </view>
         <view class="openoff">
-            <view bind:tap="wificontrol" id="buttondis-wifi" class="buttondis-wifi"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                <image src="/image/WIFI.png" class="openoff-img"/>
+            <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
             </view>
         </view>
         <!-- <view class="bottom-line"></view> -->
     </view>
     <view class="secondline">
-        <view bind:tap="lightreduce" id="button-reduce" class="button-reduce" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{reduceisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}"> 
+        <!-- <view bind:tap="lightreduce" id="button-reduce" class="button-reduce" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{reduceisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}"> 
             <image src="/image/减.png" class="secondline-button-img"/>
         </view>
         <view class="button-mid">
@@ -33,10 +33,12 @@
         </view>
         <view bind:tap="lightplus" id="button-plus" class="button-plus" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{plusisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
             <image src="/image/加.png" class="secondline-button-img"/>
-        </view>
+        </view> -->
+        <view class="firsttext">亮度</view>
+        <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" active-color="gray" block-size='25' show-value></slider>
     </view>
     <view class="thirdline">
-        <view bind:tap="cold" id="thirdline-cold" class="thirdline-cold" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{ColdisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+        <!-- <view bind:tap="cold" id="thirdline-cold" class="thirdline-cold" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{ColdisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
             <text class="thirdline-text">冷色</text>
         </view>         
         <view bind:tap="mid" id="thirdline-mid" class="thirdline-mid" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{MidisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
@@ -44,6 +46,9 @@
         </view>
         <view bind:tap="hot" id="thirdline-hot" class="thirdline-hot" bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="position: relative; left: 2rpx; top: 0rpx">
             <text class="thirdline-text">暖色</text>
-        </view>
+        </view> -->
+        <view class="secondtext">冷</view>
+        <slider class="lighttem" bindchanging="sliderChangingtem" bindchange="sliderChangingtem" active-color="gray" block-size='25'></slider>
+        <view class="secondtext">暖</view>
     </view>
 </view>
