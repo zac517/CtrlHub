@@ -44,7 +44,7 @@
 .list {
   max-height: calc(100vh - 160px);
   border-radius: 10px 10px 0 0;
-  margin-top: 20px;
+  margin-top: 15px;
   overflow: scroll;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   column-gap: 10px;
