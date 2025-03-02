@@ -12,8 +12,8 @@
   </view>
   <view class="list">
     <view wx:for="{{devices}}" wx:key="index" class="card {{item.isOnline ? '' : 'inactive'}}" bind:longpress="cardLongpress" data-device="{{item}}" bind:tap="cardTap">
-        <text class="card-title" >{{item.name}}</text>
-        <checkbox class="device-check" checked="{{item.isSelected}}" value="{{item.deviceId}}"/>
+        <text class="card-title">{{item.name}}</text>
+        <checkbox class="device-check" checked="{{item.isSelected}}"/>
     </view>
   </view>
   <view class="footer">

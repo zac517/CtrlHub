@@ -1,3 +1,5 @@
+import { generateRandomValues } from '../../utils/util'
+
 Page({
   data: {
       devices: [],

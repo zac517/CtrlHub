@@ -15,7 +15,7 @@
     </view>
     <view class="{{selectedDevice ? '' : 'disappear'}}">
       <text class="add-title">设备名称</text>
-      <input placeholder="请输入" model:value="{{newName}}" class="device-input"/>
+      <input placeholder="{{selectedDevice.name}}" model:value="{{newName}}" class="device-input"/>
     </view>
     <text class="add-hint">*请开启手机蓝牙并保持在设备附近</text>
   </view>

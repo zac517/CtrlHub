@@ -10,6 +10,7 @@
   line-height: 50px;
   width: 140px;
   background-image: linear-gradient(to left top, white, #eeeeee);
+  background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }

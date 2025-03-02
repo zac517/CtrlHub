@@ -1,18 +1,18 @@
 // pages/manufacturer/manufacturer.js
 Page({
-  data: {
-  },
+    data: {
+    },
 
-  // 返回函数
-  backToHome() {
-    wx.redirectTo({
-      url: '/pages/home/home',
-    });
-  },
+    // 返回函数
+    backToHome() {
+        wx.redirectTo({
+            url: '/pages/home/home',
+        });
+    },
 
-  goToAdd() {
-    wx.redirectTo({
-      url: '/pages/add/add',
-    });
-  },
+    goToAdd() {
+        wx.redirectTo({
+            url: '/pages/add/add',
+        });
+    },
 });
