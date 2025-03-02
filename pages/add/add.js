@@ -41,30 +41,10 @@ Page({
   },
 
   onSelectDevice(e) {
-    wx.showLoading({
-      title: '获取中',
-    })
     const device = this.data.devices[e.detail.value];
     if (!device) return;
-
-    bluetoothManager.connectAndDiscoverServices({
-      deviceId: device.deviceId,
-      success: ({ service }) => {
-        this.setData({
-          selectedDevice: {
-            ...device,
-            serviceUUID: service.uuid
-          }
-        });
-        wx.hideLoading();
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({ 
-          title: err.type === 'TIMEOUT' ? '操作超时' : '获取服务失败',
-          icon: 'none'
-        });
-      }
+    this.setData({
+      selectedDevice: device,
     });
   },
 
@@ -87,7 +67,6 @@ Page({
       id: await generateRandomValues(),
       name: this.data.newName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
-      UUID: this.data.selectedDevice.serviceUUID,
       isOnline: false,
       isSelected: false
     };
