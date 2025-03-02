@@ -5,6 +5,14 @@ const bluetoothManager = {
     discoveryDuration: 2000,   // 设备保留时长
     janitorInterval: 2000,      // 清理检测间隔
     scanInterval: 1000,         // 扫描间隔
+    defaultTimeout: 8000
+  },
+
+  // 运行时状态
+  connectionState: {
+    isProcessing: false,
+    currentDevice: null,
+    timeoutTimer: null
   },
 
   // 状态变量
@@ -200,57 +208,86 @@ const bluetoothManager = {
     this.listeners.delete(callback);
   },
 
-  // 封装为Promise的连接方法
-  connectDevice(deviceId) {
-    return new Promise((resolve, reject) => {
-      wx.createBLEConnection({
-        deviceId,
-        success: (res) => {
-          console.log('连接成功', deviceId);
-          resolve(res);
-        },
-        fail: (err) => {
-          console.error('连接失败', err);
-          reject(err);
-        }
-      });
+  // 完整设备连接服务发现流程
+  connectAndDiscoverServices({
+    deviceId,
+    serviceFilter = (services) => services[0],
+    timeout = this.config.defaultTimeout,
+    success,
+    fail
+  }) {
+    if (this.connectionState.isProcessing) {
+      return fail?.(new Error('已有连接操作在进行中'));
+    }
+
+    this._setProcessingState(true, deviceId);
+
+    // 超时处理
+    this.connectionState.timeoutTimer = setTimeout(() => {
+      this._cleanupConnection();
+      fail?.(new Error('操作超时'));
+    }, timeout);
+
+    // 开始连接流程
+    wx.createBLEConnection({
+      deviceId,
+      success: () => {
+        this._handleServiceDiscovery(deviceId, serviceFilter, success, fail);
+      },
+      fail: (err) => {
+        this._cleanupConnection();
+        fail?.(Object.assign(err, { type: 'CONNECTION_FAILED' }));
+      }
     });
   },
 
-  // 封装为Promise的获取服务方法
-  getDeviceServices(deviceId) {
-    return new Promise((resolve, reject) => {
-      wx.getBLEDeviceServices({
-        deviceId,
-        success: (res) => {
-          if (res.services.length === 0) {
-            reject(new Error('该设备没有可用服务'));
-            return;
+  // 服务发现处理
+  _handleServiceDiscovery(deviceId, serviceFilter, success, fail) {
+    wx.getBLEDeviceServices({
+      deviceId,
+      success: (res) => {
+        try {
+          const targetService = serviceFilter(res.services);
+          if (!targetService) {
+            throw new Error('未找到匹配服务');
           }
-          resolve(res.services);
-        },
-        fail: (err) => {
-          reject(err);
+          this._cleanupConnection();
+          success?.({ service: targetService, deviceId });
+        } catch (error) {
+          this._cleanupConnection();
+          fail?.(error);
         }
-      });
+      },
+      fail: (err) => {
+        this._cleanupConnection();
+        fail?.(Object.assign(err, { type: 'SERVICE_DISCOVERY_FAILED' }));
+      }
     });
   },
 
-  // 封装为Promise的断开连接方法
-  disconnectDevice(deviceId) {
-    return new Promise((resolve) => {
+  // 状态管理
+  _setProcessingState(isProcessing, deviceId = null) {
+    this.connectionState = {
+      isProcessing,
+      currentDevice: deviceId,
+      timeoutTimer: this.connectionState.timeoutTimer
+    };
+  },
+
+  // 清理操作
+  _cleanupConnection() {
+    clearTimeout(this.connectionState.timeoutTimer);
+    
+    if (this.connectionState.currentDevice) {
       wx.closeBLEConnection({
-        deviceId,
-        success: (res) => {
-          console.log('已断开连接', deviceId);
-          resolve(res);
-        },
-        fail: (err) => {
-          console.error('断开连接失败', err);
-          resolve(); // 即使失败也继续执行
+        deviceId: this.connectionState.currentDevice,
+        complete: () => {
+          this._setProcessingState(false);
         }
       });
-    });
+    } else {
+      this._setProcessingState(false);
+    }
   },
 };
 

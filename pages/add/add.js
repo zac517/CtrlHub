@@ -1,4 +1,5 @@
 import bluetoothManager from '../../utils/bluetoothManager'
+import { generateRandomValues } from '../../utils/util'
 
 Page({
   data: {
@@ -39,49 +40,32 @@ Page({
     });
   },
 
-  // picker选择
   onSelectDevice(e) {
-    console.log(this.data.devices);
-    this.setData({
-      selectedDevice: this.data.devices[e.detail.value],
-    });
-  },
-
-  async onSelectDevice(e) {
-    if (!this.data.devices.length) return;
-    
+    wx.showLoading({
+      title: '获取中',
+    })
     const device = this.data.devices[e.detail.value];
     if (!device) return;
-    this.setData({
-      newName: device.name,
-    })
-    try {
-      // 连接设备
-      await bluetoothManager.connectDevice(device.deviceId);
-      
-      // 获取服务列表
-      const services = await bluetoothManager.getDeviceServices(device.deviceId);
-      
-      // 获取主服务UUID（示例取第一个服务）
-      const primaryService = services[0]?.uuid;
-      if (!primaryService) throw new Error('未找到可用服务');
 
-      // 记录到选中设备信息中
-      this.setData({
-        selectedDevice: {
-          ...device,
-          serviceUUID: primaryService
-        }
-      });
-      
-      console.log('成功获取主服务 UUID:', primaryService);
-    } catch (error) {
-      console.error('连接过程出错:', error);
-      wx.showToast({ title: '获取服务失败', icon: 'none' });
-    } finally {
-      // 无论成功与否都断开连接
-      await bluetoothManager.disconnectDevice(device.deviceId);
-    }
+    bluetoothManager.connectAndDiscoverServices({
+      deviceId: device.deviceId,
+      success: ({ service }) => {
+        this.setData({
+          selectedDevice: {
+            ...device,
+            serviceUUID: service.uuid
+          }
+        });
+        wx.hideLoading();
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        wx.showToast({ 
+          title: err.type === 'TIMEOUT' ? '操作超时' : '获取服务失败',
+          icon: 'none'
+        });
+      }
+    });
   },
 
   onInputChange(e) {
@@ -97,10 +81,11 @@ Page({
     });
   },
 
-  addDevices() {
+  async addDevices() {
     let savedDevices = wx.getStorageSync('devices');
     const newDevice = {
-      name: this.data.newName,
+      id: await generateRandomValues(),
+      name: this.data.newName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
       UUID: this.data.selectedDevice.serviceUUID,
       isOnline: false,
