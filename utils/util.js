@@ -31,6 +31,7 @@ async function generateRandomValues(length = 6) {
       });
       // 将 ArrayBuffer 转换为 Base64 字符串
       const base64String = encode(randomValues);
+      console.log(base64String);
       return base64String;
   } catch (error) {
       return null;

@@ -8,17 +8,17 @@ Page({
       selectedCount: 0,
   },
 
-  test() {
+  async test() {
       // 随机生成 0 到 12 之间的设备数量
       const deviceCount = Math.floor(Math.random() * 13);
       const newDevices = [];
       for (let i = 0; i < deviceCount; i++) {
           const device = {
+              id: await generateRandomValues(),
               // 按规律生成设备名称
               name: `台灯${i + 1}`,
-              // 按规律生成设备 ID 和 UUID
+              // 按规律生成设备 ID
               deviceId: String.fromCharCode(65 + i).repeat(4),
-              UUID: String.fromCharCode(65 + i).repeat(4),
               // 随机赋值 isOnline
               isOnline: Math.random() > 0.5,
               // 新增参数，表示设备是否被选中，默认值为 false
@@ -37,16 +37,8 @@ Page({
 
   // 开始选择函数
   startSelect(e) {
-      console.log("开始选择");
-      const devices = this.data.devices.map(device => ({
-          ...device,
-          isSelected: false
-      }));
       this.setData({
-          devices,
           isOnSelect: true,
-          isSelectedAll: false,
-          selectedCount: 0,
       });
   },
 
@@ -79,6 +71,7 @@ Page({
 
   // 取消选择函数
   cancelSelect() {
+      this.cancelSelectAll();
       this.setData({
           isOnSelect: false,
       });
@@ -99,6 +92,7 @@ Page({
                           selectedCount,
                           isSelectedAll: false,
                       });
+                      this.cancelSelect();
                   }
               }
           });
@@ -115,7 +109,7 @@ Page({
 
       // 遍历设备列表，更新每个设备的选中状态
       newDevices.forEach((device) => {
-          if (device.deviceId === selectedDevice.deviceId) {
+          if (device.id === selectedDevice.id) {
               // 找到当前点击的设备，切换其选中状态
               device.isSelected = !device.isSelected;
           }
@@ -172,7 +166,7 @@ Page({
                       const newName = res.content;
                       if (newName) {
                           const newDevices = this.data.devices.map(device => {
-                              if (device.deviceId === selectedDevice.deviceId) {
+                              if (device.id === selectedDevice.id) {
                                   return {
                                       ...device,
                                       name: newName
@@ -183,6 +177,7 @@ Page({
                           this.setData({
                               devices: newDevices
                           });
+                          this.cancelSelect();
                       }
                   }
               }
@@ -201,21 +196,7 @@ Page({
     this.setData({
       devices: wx.getStorageSync('devices'),
     });
-  },
-
-
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+    this.cancelSelectAll();
   },
 
   onHide() {
@@ -223,16 +204,10 @@ Page({
       wx.setStorageSync('devices', this.data.devices);
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
   onUnload() {
       wx.setStorageSync('devices', this.data.devices);
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
   onPullDownRefresh() {
       wx.stopPullDownRefresh({
           success: () => {
