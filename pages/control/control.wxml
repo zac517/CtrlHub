@@ -1,47 +1,60 @@
 <!--pages/control/control.wxml-->
-<view class="toparea">
-    <image src="/image/light.png" class="light"/>
-    <view class="top">
-        <view class="textdesign">亮度：{{status.light}}</view>
-        <view class="textdesign">模式：{{status.mode}}</view>
-        <view class="textdesign">wifi:{{status.wifi?'已连接':'未连接'}}</view>
-    </view>
-    <!-- <view class="autobutton" bind:tap="autolight">
-    <text class="autotext">自动调整亮度</text>
-    </view> -->
-</view>
-<view class="bottomarea">
-    <view class="firstline">
-        <view class="openoff">
-            <view bind:tap="openoff" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                <image  src="{{status.open ? '/image/switch1.png' : '/image/switch.png'}}" class="openoff-img"/>
-            </view>
-        </view>
-        <view class="openoff">
-            <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
-            </view>
+<view class="container">
+    <view class="toparea">
+        <image src="/image/light.png" class="light"/>
+        <view class="top">
+            <view class="textdesign">亮度：{{status.light}}</view>
+            <view class="textdesign">色温：{{status.color}}</view>
+            <view class="textdesign">wifi:{{status.wifi?'已连接':'未连接'}}</view>
+            <view class="textdesign">模式：{{status.mode[status.modeid]}}</view>
         </view>
     </view>
-    <view class="secondline">
-        <view class="firsttext">亮度</view>
-        <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" active-color="gray" block-size='25' show-value></slider>
-    </view>
-    <!-- <view class="thirdline">
-        <view class="secondtext">冷</view>
-        <slider class="lighttem" bindchanging="sliderChangingtem" bindchange="sliderChangingtem" active-color="gray" block-size='25'></slider>
-        <view class="secondtext">暖</view>
-    </view> -->
+    <view class="bottomarea">
+        <view class="firstline">
+            <view class="openoff">
+                <view bind:tap="openoff" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                    <image  src="{{status.open ? '/image/switch1.png' : '/image/switch.png'}}" class="openoff-img"/>
+                </view>
+            </view>
+            <view class="firstslider">
+                <view class="firsttext">亮度</view>
+                <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" block-size='28' activeColor='#609ff8' backgroundColor="#c9dfff"></slider>
+            </view>
+            <!-- <view class="openoff">
+                <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                    <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
+                </view>
+            </view> -->
+        </view>
+        <view class="secondline">
+            <view class="secondslider">
+                <view class="secondtext">
+                色温
+                </view>
+                <movable-area class="thirdsecond">
+                    <movable-view class="thirdthird" x="-120" y="0" direction="horizontal" out-of-bound="true" bindchange="movablefun" >
+                        <view class="thirdfourth"></view>
+                    </movable-view>
+                </movable-area>
+            </view>
+            <view class="wifiopenoff">
+                <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
+                    <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
+                </view>
+            </view>
+            <!-- <view class="firsttext">亮度</view>
+            <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" block-size='28' activeColor='#609ff8' backgroundColor="#c9dfff"></slider> -->
+        </view>
 
-<view class="thirdline">
-    <view class="firsttext">
-    色温
+        <!-- <view class="thirdline">
+            <view class="secondtext">
+            色温
+            </view>
+            <movable-area class="thirdsecond">
+                <movable-view class="thirdthird" x="-175.5" y="0" direction="horizontal" out-of-bound="true" bindchange="movablefun" >
+                    <view class="thirdfourth"></view>
+                </movable-view>
+            </movable-area>
+        </view> -->
     </view>
-    <movable-area class="thirdsecond">
-        <movable-view class="thirdthird" x="-175.5" y="0" direction="horizontal" out-of-bound="true" bindchange="movablefun" >
-            <view class="thirdfourth"></view>
-        </movable-view>
-    </movable-area>
-</view>
-
 </view>
