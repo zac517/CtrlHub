@@ -18,6 +18,7 @@
   line-height: 40px;
   padding: 0 15px;
   margin-top: 10px;
+  margin-bottom: 5px;
   border-radius: 5px;
 }
 
@@ -31,7 +32,7 @@
 .add-hint {
   color: rgba(0, 0, 0, 0.3);
   font-size: 12px;
-  margin-top: 10px;
+  margin-top: 5px;
   display: inline-block;
 }
 
@@ -42,4 +43,8 @@
 
 .disappear {
   display: none;
+}
+
+.complete.ban {
+  background-color: transparent;
 }

@@ -1,0 +1,26 @@
+{
+  "appid": "wx190bef75f02f477f",
+  "compileType": "miniprogram",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "condition": {},
+  "setting": {
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true,
+    "showShadowRootInWxmlPanel": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "editorSetting": {
+    "tabIndent": "auto",
+    "tabSize": 2
+  }
+}
