@@ -1,7 +1,7 @@
 .toparea{
     background-color: #f3f3f3;
     width:100%;
-    height:64vh;
+    height:50vh;
     /* display:flex; */
     padding: 4.5vh;
     position: relative;
@@ -65,7 +65,7 @@
 /* 父容器 */
 .firstline {
     width: 100%;
-    height: 10vh;
+    height: 13.5vh;
     padding: 0 ;
     margin: 0;
     position: relative;
@@ -73,7 +73,7 @@
 
 .openoff {
     width: 49.5%;
-    height: 10vh;
+    height: 13.5vh;
     /* border-bottom: 1px solid #ddd; */
     padding: 0rpx ;
     border: none;
@@ -102,25 +102,23 @@
 } */
 
 .openoff-img{
-    width:5vh;
-    height:5vh;
+    width:6vh;
+    height:6vh;
     position: absolute;
     top: 23%;
-    left: 40%;
+    left: 35%;
 }
 .secondline {
     background-color: white;
     width: 100%;
-    height: 5.5vh;
+    height: 11vh;
     padding:20rpx;
-    margin: 0;
     position: relative;
     margin-top: 5rpx;
-
 }
 
 .firsttext{
-    display: inline-block;
+    margin-bottom: 4vh;
 }
 
 .slider{
@@ -174,23 +172,56 @@
     background-color: white;
     /* height: 8vh;
     padding: 0 ; */
-    height: 5.5vh;
+    height: 11vh;
     padding:20rpx;
     margin: 0;
     position: relative;
     /* margin-top: 5rpx; */
     margin-bottom: 3rpx;
+    /* display:flex;
+    justify-content: center;
+    align-items: center; */
+    display: inline-block;
 }
-.secondtext{
+
+/* .thirdfirst{
+    margin-bottom: 3vh;
+} */
+
+.thirdsecond{
+    background:linear-gradient(to right, #AACDFF 0%, #FFFFFF 50%, #FFBEB4 100%);
+    height:50rpx;
+    width:90%;
+    border-radius: 20rpx;
+    left:1.3vh;
+    bottom: 1vh;
+    /* border: 3px solid rgb(0, 0, 0); */
+}
+
+.thirdthird{   
+    width:200%;
+    height:100%;
+    align-items: center;
+    display:flex;
+    justify-content: center;
+}
+
+.thirdfourth{
+    height:60rpx;
+    width:10rpx;
+    background-color: black;
+    border-radius: 40rpx;
+}
+
+/* .secondtext{
     display: inline-block;
 }
 
 .lighttem{
     width:72%;
     display:inline-block;
-    /* position: absolute; */
     margin-left: 60rpx;
-}
+} */
 /* .thirdline-cold{
     height:100%;
     width:33.1%;

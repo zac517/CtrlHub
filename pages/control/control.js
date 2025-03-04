@@ -53,6 +53,14 @@ Page({
         });
     },
 
+    movablefun(e){
+        // console.log(e)
+        this.setData({
+            value:e.detail.x+175.5
+        })
+        console.log(e.detail.x+175.5)
+    },
+
   wificontrol(){
     console.log("点击wifi开关")
   },

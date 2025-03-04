@@ -1,5 +1,5 @@
 import { generateRandomValues } from '../../utils/util'
-import CommunicationManager from '../../utils/communicationManager'
+import CommunicationManager from '../../utils/communicationManager.js'
 
 Page({
   data: {
