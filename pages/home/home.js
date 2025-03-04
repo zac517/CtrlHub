@@ -1,5 +1,4 @@
-import { generateRandomValues } from '../../utils/util'
-import CommunicationManager from '../../utils/communicationManager.js'
+import CommunicationManager from '../../utils/communicationManager'
 
 Page({
   data: {
@@ -10,38 +9,10 @@ Page({
       commManager: null,
   },
 
-  async test() {
-      // 随机生成 0 到 12 之间的设备数量
-      const deviceCount = Math.floor(Math.random() * 13);
-      const newDevices = [];
-      for (let i = 0; i < deviceCount; i++) {
-          const device = {
-              id: await generateRandomValues(),
-              // 按规律生成设备名称
-              name: `台灯${i + 1}`,
-              // 按规律生成设备 ID
-              deviceId: String.fromCharCode(65 + i).repeat(4),
-              // 随机赋值 isOnline
-              isOnline: Math.random() > 0.5,
-              // 新增参数，表示设备是否被选中，默认值为 false
-              isSelected: false
-          };
-          newDevices.push(device);
-      }
-      // 更新 data 中的 devices 列表
-      this.setData({
-          devices: newDevices,
-          isOnSelect: false,
-          isSelectedAll: false,
-          selectedCount: 0,
-      });
-  },
-
   refresh() {
     // 检测设备状态
     const deviceIds = this.data.devices.map(device => device.deviceId);
     this.data.commManager.checkMultipleOnlineStatus(deviceIds).then(statusMap => {
-      console.log(statusMap);
       let newDevices = [...this.data.devices];
       newDevices.forEach(device => {
         device.isOnline = statusMap.get(device.deviceId);
@@ -164,10 +135,17 @@ Page({
       this.handleCheckboxChange(e);
     }
     else {
-      wx.redirectTo({
-        url: '/pages/control/control',
-      })
-
+      if (e.currentTarget.dataset.device.manufacturer == "Luminalink") {
+        wx.redirectTo({
+          url: '/pages/control/control',
+        })
+      }
+      else {
+        wx.showToast({
+          title: '暂不支持控制此类设备',
+          icon: 'none'
+        });
+      }
     }
   },
 

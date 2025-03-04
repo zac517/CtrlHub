@@ -1,24 +1,23 @@
 // bluetoothManager.js
 const bluetoothManager = {
   config: {
-    scanInterval: 1000,       // 扫描间隔（毫秒）
-    autoOpen: true,           // 自动开启蓝牙
-    reconnectInterval: 2000,  // 重连间隔（毫秒）
-    updateInterval: 2000,     // 设备列表更新间隔（毫秒）
-    expireTime: 5000         // 设备过期时间（毫秒），10秒未扫描到则移除
+    scanInterval: 1000,
+    autoOpen: true,
+    reconnectInterval: 2000,
+    updateInterval: 2000,
+    expireTime: 5000,
+    rssiThreshold: -80
   },
 
-  adapterState: {
-    available: false,
-    discovering: false,
-  },
-  devices: [],                // 对外暴露的设备列表
-  deviceMap: new Map(),       // 存储发现的设备
-  connectedDevices: new Map(),// 存储已连接设备
+  adapterState: { available: false, discovering: false },
+  devices: [],
+  deviceMap: new Map(),
+  connectedDevices: new Map(),
+  deviceServicesMap: new Map(),  // 新增：存储服务和特征值
   pendingDiscovery: false,
-  listeners: new Set(),       // 设备列表变化监听
-  adapterListeners: new Set(),// 适配器状态变化监听
-  updateTimer: null,          // 设备列表更新定时器
+  listeners: new Set(),
+  adapterListeners: new Set(),
+  updateTimer: null,
 
   // 初始化
   initBluetooth(options = {}) {
@@ -63,8 +62,7 @@ const bluetoothManager = {
     wx.offBluetoothDeviceFound();
     wx.onBluetoothDeviceFound(res => {
       res.devices.forEach(device => {
-        if (device.name) {
-          // 更新设备信息，记录最后发现时间
+        if (device.name && device.RSSI > this.config.rssiThreshold) {
           const enhancedDevice = { ...device, lastSeen: Date.now() };
           this.deviceMap.set(device.deviceId, enhancedDevice);
         }
@@ -138,6 +136,7 @@ const bluetoothManager = {
   },
 
   // 连接设备
+  // 连接设备并获取服务和特征值
   connect(deviceId) {
     if (this.connectedDevices.has(deviceId)) return Promise.resolve(true);
 
@@ -146,17 +145,105 @@ const bluetoothManager = {
         deviceId,
         success: () => {
           this.connectedDevices.set(deviceId, { connected: true });
-          // 监听断开
+          // 监听连接状态变化
           wx.onBLEConnectionStateChange(res => {
             if (!res.connected && res.deviceId === deviceId) {
               this.connectedDevices.delete(deviceId);
+              this.deviceServicesMap.delete(deviceId);  // 断开时清理服务数据
               this._attemptReconnect(deviceId);
             }
           });
-          resolve(true);
+          // 获取服务和特征值
+          this._discoverServicesAndCharacteristics(deviceId)
+            .then(() => resolve(true))
+            .catch(reject);
         },
         fail: reject
       });
+    });
+  },
+
+  // 新增：发现服务和特征值
+  _discoverServicesAndCharacteristics(deviceId) {
+    return new Promise((resolve, reject) => {
+      wx.getBLEDeviceServices({
+        deviceId,
+        success: res => {
+          const services = res.services;
+          const servicePromises = services.map(service => {
+            return new Promise((resolveService, rejectService) => {
+              wx.getBLEDeviceCharacteristics({
+                deviceId,
+                serviceId: service.uuid,
+                success: charRes => {
+                  resolveService({ serviceId: service.uuid, characteristics: charRes.characteristics });
+                },
+                fail: rejectService
+              });
+            });
+          });
+          Promise.all(servicePromises)
+            .then(serviceData => {
+              this.deviceServicesMap.set(deviceId, serviceData);
+              resolve();
+            })
+            .catch(reject);
+        },
+        fail: reject
+      });
+    });
+  },
+
+  // 发送消息（使用存储的服务和特征值）
+  sendMessage(deviceId, message) {
+    if (!this.connectedDevices.has(deviceId)) {
+      return this.connect(deviceId).then(() => this.sendMessage(deviceId, message));
+    }
+
+    const serviceData = this.deviceServicesMap.get(deviceId);
+    if (!serviceData || serviceData.length === 0) {
+      return Promise.reject(new Error('No services found for this device'));
+    }
+
+    // 假设使用第一个服务和第一个可写的特征值（实际需根据协议调整）
+    const service = serviceData[0];
+    const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
+    if (!writableChar) {
+      return Promise.reject(new Error('No writable characteristic found'));
+    }
+
+    return new Promise((resolve, reject) => {
+      wx.writeBLECharacteristicValue({
+        deviceId,
+        serviceId: service.serviceId,
+        characteristicId: writableChar.uuid,
+        value: this._stringToBuffer(message),
+        success: resolve,
+        fail: reject
+      });
+    });
+  },
+
+  // 接收消息（启用特征值通知）
+  onMessageReceived(callback) {
+    wx.onBLECharacteristicValueChange(res => {
+      callback(res.deviceId, this._bufferToString(res.value));
+    });
+    // 启用通知（需在连接后为特定特征值启用）
+    this.connectedDevices.forEach((_, deviceId) => {
+      const serviceData = this.deviceServicesMap.get(deviceId);
+      if (serviceData && serviceData.length > 0) {
+        const service = serviceData[0];
+        const notifyChar = service.characteristics.find(char => char.properties.notify || char.properties.indicate);
+        if (notifyChar) {
+          wx.notifyBLECharacteristicValueChange({
+            deviceId,
+            serviceId: service.serviceId,
+            characteristicId: notifyChar.uuid,
+            state: true
+          });
+        }
+      }
     });
   },
 
@@ -165,31 +252,6 @@ const bluetoothManager = {
     if (!this.connectedDevices.has(deviceId)) return;
     wx.closeBLEConnection({ deviceId });
     this.connectedDevices.delete(deviceId);
-  },
-
-  // 发送消息（假设已实现特征值读写）
-  sendMessage(deviceId, message) {
-    if (!this.connectedDevices.has(deviceId)) {
-      return this.connect(deviceId).then(() => this.sendMessage(deviceId, message));
-    }
-    // 假设通过特征值发送，具体实现需根据设备协议
-    return new Promise((resolve, reject) => {
-      wx.writeBLECharacteristicValue({
-        deviceId,
-        serviceId: 'SERVICE_UUID', // 示例UUID
-        characteristicId: 'CHAR_UUID',
-        value: this._stringToBuffer(message),
-        success: resolve,
-        fail: reject
-      });
-    });
-  },
-
-  // 接收消息（需注册特征值通知）
-  onMessageReceived(callback) {
-    wx.onBLECharacteristicValueChange(res => {
-      callback(res.deviceId, this._bufferToString(res.value));
-    });
   },
 
   // 自动重连
@@ -243,6 +305,7 @@ const bluetoothManager = {
     this.adapterListeners.clear();
     this.stopDiscovery();
     this.connectedDevices.clear();
+    this.deviceServicesMap.clear();  // 清理服务数据
     this.deviceMap.clear();
     this.devices = [];
     wx.closeBluetoothAdapter();
