@@ -1,9 +1,9 @@
 .toparea{
-    background-color: #f3f3f3;
+    /* background-color: #f3f3f3; */
     width:100%;
     height:50vh;
     /* display:flex; */
-    padding: 4.5vh;
+    padding: 3.4vh;
     position: relative;
     display:inline-block;
 }
@@ -18,11 +18,12 @@
 }
 
 .top{
-    /* margin-top: auto; */
+    margin-left: -20px;
+    /* display: flex; */
     left:0;
     bottom:0;
     height:30px;
-    width:100%;
+    width:100vh;
     position: absolute;
     /* display:inline-block; */
     /* background-color:red; */
@@ -37,18 +38,12 @@
     font-size: 15px;
     display:inline-block;
     /* background-color: royalblue; */
-    margin: 5px 35px;
+    margin: 5px 18px;
 }
 /* .firstline{
     width:100%;
     display:flex;
     height:200rpx;
-}
-.openoff{
-    width:20%;
-    height:200rpx;
-    align-items: center;
-    justify-content: center;
 }
 .wificontrol{
     width:50%;
@@ -58,27 +53,43 @@
 } */
 
 .bottomarea{
-    background-color: #ddd;
+    /* background-color: #ddd; */
+    /* display: ; */
+    width:100vw;
     padding: 0;
-    margin: 0;
+    margin-left: -20px;
+    position: relative;
+    /* display:flex; */
 }
 /* 父容器 */
 .firstline {
     width: 100%;
-    height: 13.5vh;
-    padding: 0 ;
+    height: 11.3vh;
+    padding: 0;
     margin: 0;
     position: relative;
 }
 
 .openoff {
-    width: 49.5%;
-    height: 13.5vh;
+    width:30%;
+    height: 11.3vh;
     /* border-bottom: 1px solid #ddd; */
-    padding: 0rpx ;
+    /* padding: 0rpx ; */
     border: none;
     /* background-color: yellow; */
-    display: inline-block
+    display: inline-block;
+    position: relative;
+}
+
+.wifiopenoff {
+    width:30%;
+    height: 11.3vh;
+    /* border-bottom: 1px solid #ddd; */
+    /* padding: 0rpx ; */
+    border: none;
+    /* background-color: yellow; */
+    display: inline-block;
+    position: absolute;
 }
 
 .buttonopen{
@@ -89,6 +100,21 @@
     position: relative;
     /* margin-right: 3rpx; */
     background-color:#ffffff;
+}
+
+.firstslider{
+    width:70%;
+    background-color: #ffffff;
+    height: 11.3vh;
+    display:inline-block;
+    position: absolute;
+    margin-left:10rpx;
+}
+
+.slider{
+    width:90%;
+    /* display:inline-block; */
+    margin-bottom: 10rpx;
 }
 
 /* .buttondis-wifi{
@@ -106,26 +132,62 @@
     height:6vh;
     position: absolute;
     top: 23%;
-    left: 35%;
+    left: 30%;
 }
 .secondline {
-    background-color: white;
+    /* background-color: white; */
     width: 100%;
-    height: 11vh;
-    padding:20rpx;
+    height: 11.3vh;
+    /* padding-top:40rpx; */
+    /* padding-bottom:40rpx ; */
+    /* padding-left: 20rpx; */
     position: relative;
     margin-top: 5rpx;
+    /* display:inline-block */
 }
+/* .slider{
+    position: absolute;
+    width:60%;
+    display:inline-block;
+    margin-bottom: 5rpx;
+} */
+
+.secondslider{
+    width:70%;
+    background-color: #ffffff;
+    height: 11.3vh;
+    display:inline-block;
+    /* position: absolute; */
+    margin-right: 10rpx;
+}
+
+.slider .wx-slider-handle-wrapper {
+    height: 60rpx;
+    border-radius: 30rpx;
+  }
+
+  .slider .wx-slider-track {
+    border-radius: 30rpx;
+  }
+
+  .slider .wx-slider-thumb {
+    display: none;
+  }
 
 .firsttext{
-    margin-bottom: 4vh;
+    margin-top: 1vh;
+    margin-left: 1vh;
 }
 
-.slider{
+.secondtext{
+    margin-bottom: 3vh;
+}
+
+/* .slider{
     position: absolute;
     width:77%;
     display:inline-block;
-}
+} */
 
 /* .button-plus{
     height:100%;
@@ -189,11 +251,12 @@
 } */
 
 .thirdsecond{
-    background:linear-gradient(to right, #AACDFF 0%, #FFFFFF 50%, #FFBEB4 100%);
-    height:50rpx;
-    width:90%;
-    border-radius: 20rpx;
-    left:1.3vh;
+    /* background:linear-gradient(to right, #AACDFF 0%, #FFFFFF 50%, #FFBEB4 100%); */
+    background:linear-gradient(to right, #f2f6f8 0%, #ffdda9 100%);
+    height:60rpx;
+    width:88%;
+    border-radius: 40rpx;
+    left:1.8vh;
     bottom: 1vh;
     /* border: 3px solid rgb(0, 0, 0); */
 }

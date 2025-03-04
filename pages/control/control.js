@@ -6,7 +6,7 @@ Page({
    */
   data: {
         name:"",
-        status:{light:0,mode:0,wifi:false, open:true},
+        status:{light:0,color:0,wifi:false, open:true,mode:["auto","cold","warm","mid"],modeid:0},
         openisPressed:false,
         wifiisPressed:false,
         // plusisPressed:false,
@@ -34,7 +34,7 @@ Page({
         const currentStatus = this.data.status;
         const newStatus = {
             ...currentStatus, // 展开当前 status 对象，保留原有属性
-            mode:e.detail.value 
+            color:e.detail.value 
         };
         this.setData({
             status: newStatus
@@ -54,27 +54,24 @@ Page({
     },
 
     movablefun(e){
-        // console.log(e)
         this.setData({
-            value:e.detail.x+175.5
+            value:e.detail.x+120
         })
-        console.log(e.detail.x+175.5)
+        console.log(e.detail.x+120)
+        const currentStatus = this.data.status;
+        const data=e.detail.x+120;
+        const newStatus = {
+            ...currentStatus, // 展开当前 status 对象，保留原有属性
+            color:data.toFixed()
+        };
+        this.setData({
+            status: newStatus
+        });
     },
 
   wificontrol(){
     console.log("点击wifi开关")
   },
-
-//   lightreduce(){
-
-//   },
-
-//   lightplus(){
-
-//   },
-
-//   cold(){},
-//   mid(){},
 
 OnPressStart: function(e) {
     if(e.changedTouches[0].screenX>=200){ 
