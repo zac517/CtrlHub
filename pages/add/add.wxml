@@ -7,9 +7,7 @@
     <view>
       <text class="add-title">选择设备</text>
       <picker class="device-input {{!bluetoothAvailable ? 'ban' : ''}}" 
-      bindchange="onSelectDevice" bind:tap="{{!bluetoothAvailable ? 'onPickerTap' : ''}}" 
-      disabled="{{!bluetoothAvailable}}"
-      range="{{devices}}" range-key="name">
+      bindchange="onSelectDevice" bind:tap="onPickerTap" disabled="{{!bluetoothAvailable}}" range="{{devices}}" range-key="name">
         <view>{{selectedDevice ? selectedDevice.name : '请选择'}}</view>
       </picker>
     </view>
