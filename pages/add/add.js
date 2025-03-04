@@ -61,13 +61,18 @@ Page({
     });
   },
 
+  bufferToString(buffer) {
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
+  },
+
   async addDevices() {
     let savedDevices = wx.getStorageSync('devices');
     const newDevice = {
       id: await generateRandomValues(),
       name: this.data.newName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
-      isOnline: false,
+      manufacturer: this.bufferToString(this.data.selectedDevice.advertisData),
+      isOnline: true,
       isSelected: false
     };
     savedDevices = [newDevice, ...savedDevices];
