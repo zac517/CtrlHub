@@ -1,4 +1,5 @@
 import { generateRandomValues } from '../../utils/util'
+import CommunicationManager from '../../utils/communicationManager'
 
 Page({
   data: {
@@ -6,6 +7,7 @@ Page({
       isOnSelect: false,
       isSelectedAll: false,
       selectedCount: 0,
+      commManager: null,
   },
 
   async test() {
@@ -33,6 +35,22 @@ Page({
           isSelectedAll: false,
           selectedCount: 0,
       });
+  },
+
+  refresh() {
+    // 检测设备状态
+    const deviceIds = this.data.devices.map(device => device.deviceId);
+    this.data.commManager.checkMultipleOnlineStatus(deviceIds).then(statusMap => {
+      console.log(statusMap);
+      let newDevices = [...this.data.devices];
+      newDevices.forEach(device => {
+        device.isOnline = statusMap.get(device.deviceId);
+      });
+      this.setData({
+        devices: newDevices,
+      })
+      wx.stopPullDownRefresh();
+    });
   },
 
   // 开始选择函数
@@ -197,27 +215,25 @@ Page({
       devices: wx.getStorageSync('devices'),
     });
     this.cancelSelectAll();
+    this.data.commManager = new CommunicationManager();
+    this.data.commManager.init();
   },
 
   onHide() {
-      console.log("触发");
       wx.setStorageSync('devices', this.data.devices);
   },
 
   onUnload() {
       wx.setStorageSync('devices', this.data.devices);
+      this.data.commManager.close();
   },
 
   onPullDownRefresh() {
-      wx.stopPullDownRefresh({
-          success: () => {
-              wx.vibrateShort({
-                  type: "light",
-                  success: () => {
-                      this.test();
-                  }
-              });
-          }
-      });
+    wx.vibrateShort({
+      type: "light",
+      success: () => {
+        this.refresh();
+      }
+    }); 
   },
 });

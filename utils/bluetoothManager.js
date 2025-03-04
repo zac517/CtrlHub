@@ -1,294 +1,253 @@
 // bluetoothManager.js
 const bluetoothManager = {
-  // 状态配置
   config: {
-    discoveryDuration: 2000,   // 设备保留时长
-    janitorInterval: 2000,      // 清理检测间隔
-    scanInterval: 1000,         // 扫描间隔
-    defaultTimeout: 8000
+    scanInterval: 1000,       // 扫描间隔（毫秒）
+    autoOpen: true,           // 自动开启蓝牙
+    reconnectInterval: 2000,  // 重连间隔（毫秒）
+    updateInterval: 2000,     // 设备列表更新间隔（毫秒）
+    expireTime: 5000         // 设备过期时间（毫秒），10秒未扫描到则移除
   },
 
-  // 运行时状态
-  connectionState: {
-    isProcessing: false,
-    currentDevice: null,
-    timeoutTimer: null
+  adapterState: {
+    available: false,
+    discovering: false,
   },
-
-  // 状态变量
-  adapterState: null,
-  devices: [],
+  devices: [],                // 对外暴露的设备列表
+  deviceMap: new Map(),       // 存储发现的设备
+  connectedDevices: new Map(),// 存储已连接设备
   pendingDiscovery: false,
-  listeners: new Set(),
-  janitorTimer: null,
+  listeners: new Set(),       // 设备列表变化监听
+  adapterListeners: new Set(),// 适配器状态变化监听
+  updateTimer: null,          // 设备列表更新定时器
 
-  // 初始化蓝牙适配器
+  // 初始化
   initBluetooth(options = {}) {
-    // 合并配置参数
-    this.config = {
-      ...this.config,
-      ...(options.config || {})
-    };
-
-    // 注册设备监听器
-    if (options.callbacks) {
-      options.callbacks.forEach(callback => {
-        if (typeof callback === 'function') {
-          this.listeners.add(callback);
-        }
-      });
+    this.config = { ...this.config, ...options.config };
+    
+    // 注册回调
+    if (options.deviceCallbacks) {
+      options.deviceCallbacks.forEach(cb => this.addDeviceListener(cb));
+    }
+    if (options.adapterCallbacks) {
+      options.adapterCallbacks.forEach(cb => this.addAdapterListener(cb));
     }
 
-    // 初始化流程
-    this._handleStateChange(); // 持续监听适配器变化 不可用时尝试打开 首次由初始化程序打开
-    this._startDeviceJanitor(); // 持续处理设备列表 清除超时设备
-    this._checkAndOpenBluetooth(); // 尝试打开
-  },
-
-  // 处理适配器状态变化
-  _handleStateChange() {
+    // 监听适配器状态变化
     wx.onBluetoothAdapterStateChange(res => {
       this.adapterState = res;
-      if (!res.available) {
+      this._notifyAdapterListeners(res);
+      if (res.available && this.pendingDiscovery) {
+        this.startDiscoverySon();
+      } else if (!res.available && this.config.autoOpen) {
         this._checkAndOpenBluetooth();
       }
     });
+    this._checkAndOpenBluetooth();
   },
 
-  // 清理超时蓝牙设备
-  _startDeviceJanitor() {
-    if (this.janitorTimer) return;
-
-    this.janitorTimer = setInterval(() => {
-        const now = Date.now();
-        const threshold = now - this.config.discoveryDuration;
-
-        let hasChange = false;
-        // 倒序遍历列表，方便安全地删除元素
-        for (let i = this.devices.length - 1; i >= 0; i--) {
-            const device = this.devices[i];
-            if (device.lastSeen < threshold) {
-                // 删除过期的设备
-                this.devices.splice(i, 1);
-                hasChange = true;
-            }
-        }
-        if (hasChange) this.listeners.forEach(cb => cb(this.devices));
-    }, this.config.janitorInterval);
-  },
-
-  // 尝试开启蓝牙适配器
+  // 开启蓝牙适配器
   _checkAndOpenBluetooth() {
-    if (this.adapterState?.available) {
-      if (this.pendingDiscovery) this._startDiscoveryInternal();
-      return;
-    };
     wx.openBluetoothAdapter({
       success: () => {
-        if (this.pendingDiscovery) this._startDiscoveryInternal();
+        this.adapterState.available = true;
+        if (this.pendingDiscovery) {
+          this.startDiscoverySon();
+        }
       },
-      fail: () => {
-        setTimeout(() => this._checkAndOpenBluetooth(), 2000);
+      fail: () => setTimeout(() => this._checkAndOpenBluetooth(), 2000)
+    });
+  },
+
+  // 监听设备发现
+  _listenDeviceFound() {
+    wx.offBluetoothDeviceFound();
+    wx.onBluetoothDeviceFound(res => {
+      res.devices.forEach(device => {
+        if (device.name) {
+          // 更新设备信息，记录最后发现时间
+          const enhancedDevice = { ...device, lastSeen: Date.now() };
+          this.deviceMap.set(device.deviceId, enhancedDevice);
+        }
+      });
+    });
+  },
+
+  // 开始扫描
+  startDiscovery() {
+    this.pendingDiscovery = true;
+    this.deviceMap.clear();  // 清空设备列表
+    this.devices = [];
+    if (this.adapterState?.available) {
+      this.startDiscoverySon();
+      // 启动定时器，每隔 updateInterval 更新设备列表
+      this.updateTimer = setInterval(() => {
+        this._updateDevices();
+      }, this.config.updateInterval);
+    }
+  },
+
+  startDiscoverySon() {
+    wx.startBluetoothDevicesDiscovery({
+      allowDuplicatesKey: true, // 允许重复上报设备
+      interval: this.config.scanInterval,
+      success: () => this._listenDeviceFound(),
+    });
+  },
+
+  stopDiscovery() {
+    this.pendingDiscovery = false;
+    wx.stopBluetoothDevicesDiscovery();
+    wx.offBluetoothDeviceFound();
+    if (this.updateTimer) {
+      clearInterval(this.updateTimer);
+      this.updateTimer = null;
+    }
+    this._updateDevices(); // 停止扫描时立即更新一次设备列表
+  },
+
+  // 更新设备列表并移除过期设备
+  _updateDevices() {
+    const now = Date.now();
+    // 移除过期设备
+    this.deviceMap.forEach((device, deviceId) => {
+      if (now - device.lastSeen > this.config.expireTime) {
+        this.deviceMap.delete(deviceId);
+      }
+    });
+    // 更新 devices 列表
+    this.devices = Array.from(this.deviceMap.values());
+    this._notifyListeners();
+  },
+
+  // 快速扫描指定时长
+  scanForDuration(duration) {
+    return new Promise((resolve) => {
+      this.deviceMap.clear();  // 清空设备列表
+      this.devices = [];
+      this.pendingDiscovery = true;
+      if (this.adapterState?.available) {
+        this.startDiscoverySon();
+        setTimeout(() => {
+          this.stopDiscovery();
+          resolve(this.devices);
+        }, duration);
+      } else {
+        resolve([]);
       }
     });
   },
 
-  // 启动扫描
-  _startDiscoveryInternal() {
-    wx.startBluetoothDevicesDiscovery({
-      interval: this.config.scanInterval,
-      allowDuplicatesKey: true,
-      success: () => {
-        this._listenDeviceFound();
-      },
+  // 连接设备
+  connect(deviceId) {
+    if (this.connectedDevices.has(deviceId)) return Promise.resolve(true);
+
+    return new Promise((resolve, reject) => {
+      wx.createBLEConnection({
+        deviceId,
+        success: () => {
+          this.connectedDevices.set(deviceId, { connected: true });
+          // 监听断开
+          wx.onBLEConnectionStateChange(res => {
+            if (!res.connected && res.deviceId === deviceId) {
+              this.connectedDevices.delete(deviceId);
+              this._attemptReconnect(deviceId);
+            }
+          });
+          resolve(true);
+        },
+        fail: reject
+      });
     });
   },
 
-  // 发现设备后处理
-  _listenDeviceFound() {
-    wx.offBluetoothDeviceFound();
+  // 断开连接
+  disconnect(deviceId) {
+    if (!this.connectedDevices.has(deviceId)) return;
+    wx.closeBLEConnection({ deviceId });
+    this.connectedDevices.delete(deviceId);
+  },
 
-    this._deviceFoundCallback = res => {
-      const now = Date.now();
-      res.devices.forEach(device => {
-        const manufacturerId = this._parseManufacturerId(device.advertisData);
-        if (manufacturerId != "Luminalink") return;
-
-        // 查找列表中是否已存在该设备
-        let existingDeviceIndex = -1;
-        for (let i = 0; i < this.devices.length; i++) {
-          if (this.devices[i].deviceId === device.deviceId) {
-            existingDeviceIndex = i;
-            break;
-          }
-        }
-
-        const newDevice = {
-          name: device.name,
-          deviceId: device.deviceId,
-          lastSeen: now,
-        };
-
-        if (existingDeviceIndex !== -1) {
-          // 如果存在重复的 deviceId，覆盖对应的值
-          this.devices[existingDeviceIndex] = newDevice;
-        } else {
-          // 如果不存在，添加新设备到列表
-          this.devices.push(newDevice);
-        }
+  // 发送消息（假设已实现特征值读写）
+  sendMessage(deviceId, message) {
+    if (!this.connectedDevices.has(deviceId)) {
+      return this.connect(deviceId).then(() => this.sendMessage(deviceId, message));
+    }
+    // 假设通过特征值发送，具体实现需根据设备协议
+    return new Promise((resolve, reject) => {
+      wx.writeBLECharacteristicValue({
+        deviceId,
+        serviceId: 'SERVICE_UUID', // 示例UUID
+        characteristicId: 'CHAR_UUID',
+        value: this._stringToBuffer(message),
+        success: resolve,
+        fail: reject
       });
-      this.listeners.forEach(cb => cb(this.devices));
-    };
-
-    wx.onBluetoothDeviceFound(this._deviceFoundCallback);
+    });
   },
 
-  // 解析制造商标识
-  _parseManufacturerId(advertisData) {
-    return String.fromCharCode.apply(null, new Uint8Array(advertisData));
+  // 接收消息（需注册特征值通知）
+  onMessageReceived(callback) {
+    wx.onBLECharacteristicValueChange(res => {
+      callback(res.deviceId, this._bufferToString(res.value));
+    });
   },
 
-  // 启动设备搜索
-  startDiscovery() {
-    if (this.pendingDiscovery) return;
-    if (this.adapterState?.available) {
-      this._startDiscoveryInternal();
-    }
-    this.pendingDiscovery = true;
+  // 自动重连
+  _attemptReconnect(deviceId) {
+    setTimeout(() => {
+      this.connect(deviceId).catch(() => this._attemptReconnect(deviceId));
+    }, this.config.reconnectInterval);
   },
 
-  // 停止扫描
-  stopDiscovery() {
-    if (!this.pendingDiscovery) return;
-    this.devices = [];
-    wx.stopBluetoothDevicesDiscovery();
-    this.pendingDiscovery = false;
+  // 工具函数
+  _stringToBuffer(str) {
+    const ab = new ArrayBuffer(str.length * 2);
+    const view = new Uint16Array(ab);
+    for (let i = 0; i < str.length; i++) view[i] = str.charCodeAt(i);
+    return ab;
   },
 
-  // 关闭蓝牙
-  closeBluetooth() {
-    // 停止蓝牙设备扫描
-    if (this.pendingDiscovery) {
-      this.stopDiscovery();
-    }
-
-    // 清理守护进程
-    if (this.janitorTimer) {
-      clearInterval(this.janitorTimer);
-      this.janitorTimer = null;
-    }
-
-    // 关闭蓝牙适配器
-    if (this.adapterState?.available) {
-      wx.closeBluetoothAdapter({
-        success: () => {
-          this.adapterState = null;
-        },
-      });
-    }
-
-    // 移除蓝牙适配器状态变化监听器
-    wx.offBluetoothAdapterStateChange();
-
-    // 移除蓝牙设备发现监听器
-    wx.offBluetoothDeviceFound();
-
-    // 清空监听器集合
-    this.listeners.clear();
+  _bufferToString(buffer) {
+    return String.fromCharCode.apply(null, new Uint16Array(buffer));
   },
 
-  // 注册/注销监听
+  // 监听器管理
+  _notifyListeners() {
+    const list = Array.from(this.deviceMap.values());
+    this.listeners.forEach(cb => cb(list));
+  },
+
+  _notifyAdapterListeners(state) {
+    this.adapterListeners.forEach(cb => cb(state));
+  },
+
   addDeviceListener(callback) {
-    if (typeof callback === 'function') {
-      this.listeners.add(callback);
-    }
+    if (typeof callback === 'function') this.listeners.add(callback);
   },
-  
+
+  addAdapterListener(callback) {
+    if (typeof callback === 'function') this.adapterListeners.add(callback);
+  },
+
   removeDeviceListener(callback) {
     this.listeners.delete(callback);
   },
 
-  // 完整设备连接服务发现流程
-  connectAndDiscoverServices({
-    deviceId,
-    serviceFilter = (services) => services[0],
-    timeout = this.config.defaultTimeout,
-    success,
-    fail
-  }) {
-    if (this.connectionState.isProcessing) {
-      return fail?.(new Error('已有连接操作在进行中'));
-    }
-
-    this._setProcessingState(true, deviceId);
-
-    // 超时处理
-    this.connectionState.timeoutTimer = setTimeout(() => {
-      this._cleanupConnection();
-      fail?.(new Error('操作超时'));
-    }, timeout);
-
-    // 开始连接流程
-    wx.createBLEConnection({
-      deviceId,
-      success: () => {
-        this._handleServiceDiscovery(deviceId, serviceFilter, success, fail);
-      },
-      fail: (err) => {
-        this._cleanupConnection();
-        fail?.(Object.assign(err, { type: 'CONNECTION_FAILED' }));
-      }
-    });
+  removeAdapterListener(callback) {
+    this.adapterListeners.delete(callback);
   },
 
-  // 服务发现处理
-  _handleServiceDiscovery(deviceId, serviceFilter, success, fail) {
-    wx.getBLEDeviceServices({
-      deviceId,
-      success: (res) => {
-        try {
-          const targetService = serviceFilter(res.services);
-          if (!targetService) {
-            throw new Error('未找到匹配服务');
-          }
-          this._cleanupConnection();
-          success?.({ service: targetService, deviceId });
-        } catch (error) {
-          this._cleanupConnection();
-          fail?.(error);
-        }
-      },
-      fail: (err) => {
-        this._cleanupConnection();
-        fail?.(Object.assign(err, { type: 'SERVICE_DISCOVERY_FAILED' }));
-      }
-    });
-  },
-
-  // 状态管理
-  _setProcessingState(isProcessing, deviceId = null) {
-    this.connectionState = {
-      isProcessing,
-      currentDevice: deviceId,
-      timeoutTimer: this.connectionState.timeoutTimer
-    };
-  },
-
-  // 清理操作
-  _cleanupConnection() {
-    clearTimeout(this.connectionState.timeoutTimer);
-    
-    if (this.connectionState.currentDevice) {
-      wx.closeBLEConnection({
-        deviceId: this.connectionState.currentDevice,
-        complete: () => {
-          this._setProcessingState(false);
-        }
-      });
-    } else {
-      this._setProcessingState(false);
-    }
-  },
+  // 清理
+  closeBluetooth() {
+    this.listeners.clear();
+    this.adapterListeners.clear();
+    this.stopDiscovery();
+    this.connectedDevices.clear();
+    this.deviceMap.clear();
+    this.devices = [];
+    wx.closeBluetoothAdapter();
+    wx.offBluetoothAdapterStateChange();
+  }
 };
 
 export default bluetoothManager;

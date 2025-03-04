@@ -18,6 +18,7 @@
       <input placeholder="{{selectedDevice.name}}" model:value="{{newName}}" class="device-input"/>
     </view>
     <text class="add-hint">*请开启手机蓝牙并保持在设备附近</text>
+    <text class="add-hint">*若未找到设备请再次选择</text>
   </view>
-  <view class="complete" bind:tap="addDevices">完成</view>
+  <view class="complete {{!selectedDevice ? 'ban' : ''}}" bind:tap="{{selectedDevice ? 'addDevices' : '' }}">完成</view>
 </view>

@@ -27,7 +27,7 @@ Page({
 
     if (platform !== 'devtools') {
       bluetoothManager.initBluetooth({
-        callbacks: [this.updateDevices.bind(this),],
+        deviceCallbacks: [this.updateDevices.bind(this),],
       });
       bluetoothManager.startDiscovery();
     };
