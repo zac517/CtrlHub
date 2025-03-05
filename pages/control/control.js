@@ -1,117 +1,128 @@
 // pages/control/control.js
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-        name:"",
-        status:{light:0,color:0,wifi:false, open:true,mode:["auto","cold","warm","mid"],modeid:0},
-        openisPressed:false,
-        wifiisPressed:false,
-        // plusisPressed:false,
-        // reduceisPressed:false,
-        // MidisPressed:false,
-        // HotisPressed:false,
-        // ColdisPressed:false
-    },
-
-    sliderChanging:function(e)
-    {
-        // console.log(e.detail.value)
-        const currentStatus = this.data.status;
-        const newStatus = {
-            ...currentStatus, // 展开当前 status 对象，保留原有属性
-            light:e.detail.value 
-        };
-        this.setData({
-            status: newStatus
-        });
-    },
-    sliderChangingtem:function(e)
-    {
-        // console.log(e.detail.value)
-        const currentStatus = this.data.status;
-        const newStatus = {
-            ...currentStatus, // 展开当前 status 对象，保留原有属性
-            color:e.detail.value 
-        };
-        this.setData({
-            status: newStatus
-        });
-    },
-
-    openoff(){
-        console.log("点击开关");
-        const currentStatus = this.data.status;
-        const newStatus = {
-            ...currentStatus, // 展开当前 status 对象，保留原有属性
-            open:!currentStatus.open
-        };
-        this.setData({
-            status: newStatus
-        });
-    },
-
-    movablefun(e){
-        this.setData({
-            value:e.detail.x+120
-        })
-        console.log(e.detail.x+120)
-        const currentStatus = this.data.status;
-        const data=e.detail.x+120;
-        const newStatus = {
-            ...currentStatus, // 展开当前 status 对象，保留原有属性
-            color:data.toFixed()
-        };
-        this.setData({
-            status: newStatus
-        });
-    },
-
-  wificontrol(){
-    console.log("点击wifi开关")
+      name: "",
+      isOpen: false,
+      isWiFiOpen: false,
+      mode: 0,
+      modeLabel: ['均衡', '夜间', '专注', '自动'],
+      buttons: [
+        {
+          name: 'power',
+          type: 'tap',
+          label: '',
+          isPressed: false,
+          bindtap: 'onPowerTap',
+        },
+        {
+          name: 'brightness',
+          type: 'drag',
+          label: '亮度',
+          isPressed: false,
+        },
+        {
+          name: 'color',
+          type: 'drag',
+          label: '色温',
+          isPressed: false,
+        },
+        {
+          name: 'mode',
+          type: 'tap',
+          label: '模式',
+          isPressed: false,
+          bindtap: 'onModeTap',
+        },
+        {
+          name: 'wifi',
+          type: 'tap',
+          label: 'WiFi',
+          isPressed: false,
+          bindtap: 'onWiFiTap',
+        },
+        {
+          name: 'config',
+          type: 'tap',
+          label: '配网',
+          isPressed: false,
+        },
+      ]
+  },
+  
+  onTouchStart(e) {
+    let index = e.target.dataset.index;
+    let newButton = {...this.data.buttons[index], isPressed: true};
+    let newButtons = [...this.data.buttons];
+    newButtons[index] = newButton;
+    this.setData({
+      buttons: newButtons,
+    });
   },
 
-OnPressStart: function(e) {
-    if(e.changedTouches[0].screenX>=200){ 
-        this.setData({
-            wifiisPressed: true
-        });
+  onTouchEnd(e) {
+    let index = e.target.dataset.index;
+    let newButton = {...this.data.buttons[index], isPressed: false};
+    let newButtons = [...this.data.buttons];
+    newButtons[index] = newButton;
+    this.setData({
+      buttons: newButtons,
+    });
+  },
+
+  onPowerTap() {
+    if (this.data.isOpen) {
+      this.setData({
+        isOpen: false,
+      });
     }
-    else{
-        this.setData({
-            openisPressed: true
-        });
+    else {
+      this.setData({
+        isOpen: true,
+      });
     }
-    wx.vibrateShort();
-},
-OnPressEnd: function(e) {
-    if(e.changedTouches[0].screenX>=200){ 
-        this.setData({
-            wifiisPressed: false
-        });
+  },
+
+  onWiFiTap() {
+    if (this.data.isWiFiOpen) {
+      this.setData({
+        isWiFiOpen: false,
+      });
     }
-    else{
-        this.setData({
-            openisPressed: false
-        });
+    else {
+      this.setData({
+        isWiFiOpen: true,
+      });
     }
-    wx.vibrateShort();
-},
+  },
+
+  onModeTap() {
+    if (this.data.mode == 3) {
+      this.setData({
+        mode: 0,
+      });
+    }
+    else {
+      this.setData({
+        mode: this.data.mode + 1,
+      });
+    }
+  },
 
 
+  // 返回函数
+  backToHome() {
+    wx.redirectTo({
+        url: '/pages/home/home',
+    });
+  },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-      
-        // const configurename = JSON.parse(decodeURIComponent(options.name));
-        // console.log("复杂数据：", configurename);
-        // this.setData({
-        //   name: configurename
-        // });
+    this.setData({
+      name: options.name
+    });
   },
 
   /**
@@ -141,25 +152,4 @@ OnPressEnd: function(e) {
   onUnload() {
 
   },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-    this.onload()
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
-  }
 })

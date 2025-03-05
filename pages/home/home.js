@@ -135,9 +135,9 @@ Page({
       this.handleCheckboxChange(e);
     }
     else {
-      if (e.currentTarget.dataset.device.manufacturer == "Luminalink") {
+      if (/*e.currentTarget.dataset.device.manufacturer == "Luminalink"*/true) {
         wx.redirectTo({
-          url: '/pages/control/control',
+          url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}`,
         })
       }
       else {
