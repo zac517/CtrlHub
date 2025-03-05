@@ -1,4 +1,4 @@
-### Object device 属性
+### home 页面 Object device 属性
 
 |属性|类型|解释|
 |-|-|-|
@@ -8,3 +8,9 @@
 |manufacturer|string|设备的制造商|
 |isOnline|bool|设备在线标识|
 |isSelected|bool|设备被选中标识|
+
+### 等待修复的问题
+
+1.下拉提前打断后进行下一次下拉出现异常
+
+2.关闭蓝牙进入添加设备页面后开启蓝牙 设备列表无法更新 只发生在此页面第一次加载时

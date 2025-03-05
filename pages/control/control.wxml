@@ -1,60 +1,30 @@
 <!--pages/control/control.wxml-->
 <view class="container">
-    <view class="toparea">
-        <image src="/image/light.png" class="light"/>
-        <view class="top">
-            <view class="textdesign">亮度：{{status.light}}</view>
-            <view class="textdesign">色温：{{status.color}}</view>
-            <view class="textdesign">wifi:{{status.wifi?'已连接':'未连接'}}</view>
-            <view class="textdesign">模式：{{status.mode[status.modeid]}}</view>
+    <view class="header">
+        <text class="title">{{name}}</text>
+        <view class="back-button icon-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
+    </view>
+    <view class="content">
+        <view class="lamp">
+          <icon class="iconfont icon-lamp-{{isOpen ? 'on' : 'slash'}}"/>
+        </view>
+        <view wx:if="{{isOpen}}" class="imformation">
+          <view class="imfo-child"><icon class="iconfont icon-mode"/>模式{{modeLabel[mode]}}</view>
+          <view class="imfo-child"><icon class="iconfont icon-brightness"/>亮度 100%</view>
+          <view class="imfo-child" style="{{isWiFiOpen ? '' : 'opacity: 0'}}"><icon class="iconfont icon-wifi"/>WiFi 开启</view>
         </view>
     </view>
-    <view class="bottomarea">
-        <view class="firstline">
-            <view class="openoff">
-                <view bind:tap="openoff" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{openisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                    <image  src="{{status.open ? '/image/switch1.png' : '/image/switch.png'}}" class="openoff-img"/>
-                </view>
-            </view>
-            <view class="firstslider">
-                <view class="firsttext">亮度</view>
-                <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" block-size='28' activeColor='#609ff8' backgroundColor="#c9dfff"></slider>
-            </view>
-            <!-- <view class="openoff">
-                <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                    <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
-                </view>
-            </view> -->
+    <view class="panel">
+        <view 
+        wx:for="{{buttons}}" 
+        wx:key="index" 
+        class="panel-button {{item.isPressed ? 'pressed' : ''}} {{item.type == 'drag' ? 'long-button' : ''}} {{item.name == 'power' || isOpen ? '' : 'inactive'}} " 
+        bindtouchstart="{{item.name == 'power' || isOpen ? 'onTouchStart' : ''}}" 
+        bindtouchend="{{item.name == 'power' || isOpen ? 'onTouchEnd' : ''}}" 
+        bindtap="{{item.name == 'power' || isOpen ? item.bindtap : ''}}"
+        data-index="{{index}}">
+        <icon wx:if="{{item.name == 'power'}}" class="iconfont icon-power"/>
+        {{item.label}}
         </view>
-        <view class="secondline">
-            <view class="secondslider">
-                <view class="secondtext">
-                色温
-                </view>
-                <movable-area class="thirdsecond">
-                    <movable-view class="thirdthird" x="-120" y="0" direction="horizontal" out-of-bound="true" bindchange="movablefun" >
-                        <view class="thirdfourth"></view>
-                    </movable-view>
-                </movable-area>
-            </view>
-            <view class="wifiopenoff">
-                <view bind:tap="wificontrol" class="buttonopen"  bindtouchstart="OnPressStart" bindtouchend="OnPressEnd" style="{{wifiisPressed ? 'background-color: #f3f3f3;' : '#ffffff'}}">
-                    <image src="{{status.wifi ? '/image/WIFION.png' : '/image/WIFI.png'}}" class="openoff-img"/>
-                </view>
-            </view>
-            <!-- <view class="firsttext">亮度</view>
-            <slider class="slider" bindchanging="sliderChanging" bindchange="sliderChanging" block-size='28' activeColor='#609ff8' backgroundColor="#c9dfff"></slider> -->
-        </view>
-
-        <!-- <view class="thirdline">
-            <view class="secondtext">
-            色温
-            </view>
-            <movable-area class="thirdsecond">
-                <movable-view class="thirdthird" x="-175.5" y="0" direction="horizontal" out-of-bound="true" bindchange="movablefun" >
-                    <view class="thirdfourth"></view>
-                </movable-view>
-            </movable-area>
-        </view> -->
     </view>
 </view>

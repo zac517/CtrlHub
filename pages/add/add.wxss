@@ -1,5 +1,5 @@
 .content {
-  height: calc(100vh - 265px);
+  height: calc(100vh - var(--top-margin) - 180px);
   margin-top: 5px;
 }
 
@@ -39,10 +39,6 @@
 .ban {
   color: rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.03);
-}
-
-.disappear {
-  display: none;
 }
 
 .complete.ban {

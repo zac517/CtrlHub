@@ -36,7 +36,7 @@ const bluetoothManager = {
       this.adapterState = res;
       this._notifyAdapterListeners(res);
       if (res.available && this.pendingDiscovery) {
-        this.startDiscoverySon();
+        this.startDiscoveryChild();
       } else if (!res.available && this.config.autoOpen) {
         this._checkAndOpenBluetooth();
       }
@@ -50,7 +50,7 @@ const bluetoothManager = {
       success: () => {
         this.adapterState.available = true;
         if (this.pendingDiscovery) {
-          this.startDiscoverySon();
+          this.startDiscoveryChild();
         }
       },
       fail: () => setTimeout(() => this._checkAndOpenBluetooth(), 2000)
@@ -76,7 +76,7 @@ const bluetoothManager = {
     this.deviceMap.clear();  // 清空设备列表
     this.devices = [];
     if (this.adapterState?.available) {
-      this.startDiscoverySon();
+      this.startDiscoveryChild();
       // 启动定时器，每隔 updateInterval 更新设备列表
       this.updateTimer = setInterval(() => {
         this._updateDevices();
@@ -84,7 +84,7 @@ const bluetoothManager = {
     }
   },
 
-  startDiscoverySon() {
+  startDiscoveryChild() {
     wx.startBluetoothDevicesDiscovery({
       allowDuplicatesKey: true, // 允许重复上报设备
       interval: this.config.scanInterval,
@@ -124,7 +124,7 @@ const bluetoothManager = {
       this.devices = [];
       this.pendingDiscovery = true;
       if (this.adapterState?.available) {
-        this.startDiscoverySon();
+        this.startDiscoveryChild();
         setTimeout(() => {
           this.stopDiscovery();
           resolve(this.devices);

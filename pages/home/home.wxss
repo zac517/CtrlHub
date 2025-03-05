@@ -1,9 +1,4 @@
-.header-on-select {
-  width: 100%;
-  margin-top: 80px;
-  height: 40px;
-  line-height: 40px;
-  position: relative;
+.select {
   display: none;
 }
 
@@ -11,7 +6,7 @@
   display: none;
 }
 
-.is-on-select .header-on-select {
+.is-on-select .select {
   display: block;
 }
 

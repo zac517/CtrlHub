@@ -4,7 +4,7 @@
     <view class="add-button icon-button" bind:tap="selectManufacturer"><icon class="iconfont icon-add"/></view>
     <view class="menu-button icon-button" bind:tap="startSelect"><icon class="iconfont icon-menu"/></view>
   </view>
-  <view class="header-on-select">
+  <view class="header select">
     <view class="select-all" bind:tap="selectAll">全选</view>
     <view class="cancel-select-all" bind:tap="cancelSelectAll">取消全选</view>
     <view class="hint">已选择<text class="hint-number">{{selectedCount}}</text>项</view>

@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4773959 */
-  src: url('//at.alicdn.com/t/c/font_4773959_1vaynjdptek.woff2?t=1740723556090') format('woff2'),
-       url('//at.alicdn.com/t/c/font_4773959_1vaynjdptek.woff?t=1740723556090') format('woff'),
-       url('//at.alicdn.com/t/c/font_4773959_1vaynjdptek.ttf?t=1740723556090') format('truetype');
+  src: url('//at.alicdn.com/t/c/font_4773959_3j6lynxj05p.woff2?t=1741174129840') format('woff2'),
+       url('//at.alicdn.com/t/c/font_4773959_3j6lynxj05p.woff?t=1741174129840') format('woff'),
+       url('//at.alicdn.com/t/c/font_4773959_3j6lynxj05p.ttf?t=1741174129840') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,30 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-wifi:before {
+  content: "\e848";
+}
+
+.icon-power:before {
+  content: "\e629";
+}
+
+.icon-brightness:before {
+  content: "\e80d";
+}
+
+.icon-mode:before {
+  content: "\e679";
+}
+
+.icon-lamp-slash:before {
+  content: "\e6b0";
+}
+
+.icon-lamp-on:before {
+  content: "\e6b1";
 }
 
 .icon-rename:before {
@@ -29,19 +53,6 @@
   content: "\e600";
 }
 
-.icon-home:before {
-  content: "\e644";
-}
-
-.icon-more:before {
-  content: "\e605";
-}
-
 .icon-menu:before {
   content: "\e621";
 }
-
-.icon-lamp:before {
-  content: "\e6c4";
-}
-
