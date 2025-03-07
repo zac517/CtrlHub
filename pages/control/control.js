@@ -1,7 +1,10 @@
 // pages/control/control.js
+import CommunicationManager from '../../utils/communicationManager'
+
 Page({
   data: {
-      name: "",
+      name: '',
+      deviceId: '',
       isOpen: false,
       isWiFiOpen: false,
       mode: 0,
@@ -45,8 +48,10 @@ Page({
           type: 'tap',
           label: '配网',
           isPressed: false,
+          bindtap: 'onConfigTap',
         },
-      ]
+      ],
+      commManager: null,
   },
   
   onTouchStart(e) {
@@ -108,7 +113,6 @@ Page({
     }
   },
 
-
   // 返回函数
   backToHome() {
     wx.redirectTo({
@@ -121,7 +125,29 @@ Page({
    */
   onLoad(options) {
     this.setData({
-      name: options.name
+      name: options.name,
+      deviceId: options.deviceId,
+    });
+
+    this.data.commManager = new CommunicationManager();
+    this.data.commManager.init();
+
+    let commManager = this.data.commManager;
+    let deviceId = this.data.deviceId;
+
+    commManager.connect(deviceId)
+      .then(connectionType => {
+        console.log(`连接成功，通过 ${connectionType}`);
+        // 发送消息
+        commManager.sendMessage(deviceId, { type: 'command', data: 'Hello Device' })
+          .then(() => console.log('消息发送成功'))
+          .catch(err => console.error('消息发送失败:', err));
+      })
+      .catch(err => console.error('连接失败:', err));
+
+    // 监听消息
+    commManager.onMessageReceived((deviceId, message) => {
+      console.log(`收到消息 (${deviceId}):`, message);
     });
   },
 

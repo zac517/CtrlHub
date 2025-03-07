@@ -28,10 +28,10 @@ Page({
 
     if (platform !== 'devtools') {
       bluetoothManager.initBluetooth({
-        deviceCallbacks: [this.updateDevices.bind(this),],
-        adapterCallbacks: [this.updateAdapter.bind(this),],
+        deviceChange: this.updateDevices.bind(this),
+        adapterChange: this.updateAdapter.bind(this),
+        success: () => bluetoothManager.startDiscovery(),
       });
-      bluetoothManager.startDiscovery();
     };
   },
 
