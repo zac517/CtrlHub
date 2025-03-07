@@ -57,8 +57,35 @@
 .panel-button.long-button {
   flex-grow: 3;
   flex-basis: 60vw;
+  position: relative;
 }
 
 .panel-button.pressed {
   background-color: rgba(0, 0, 0, 0.01);
 }
+
+.brightnessview{
+    height: 100%;
+    width:100%;
+    /* position: absolute; */
+}
+
+.brightnesswxss{
+    width:90%;
+    /* display:inline-block; */
+    height:100%;
+    position: absolute;
+}
+
+.brightnesswxss.wx-slider-handle-wrapper {
+    height: 50rpx;
+    border-radius: 30rpx;
+  }
+
+  .brightnesswxss.wx-slider-track {
+    border-radius: 30rpx;
+  }
+
+  .brightnesswxss.wx-slider-thumb {
+    display: none;
+  }
