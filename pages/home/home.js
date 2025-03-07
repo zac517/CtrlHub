@@ -7,10 +7,16 @@ Page({
       isSelectedAll: false,
       selectedCount: 0,
       commManager: null,
+      isOnDiscovery: false,
   },
 
   refresh() {
     // 检测设备状态
+    if (this.data.isOnDiscovery) {
+      wx.stopPullDownRefresh();
+      return;
+    };
+    this.data.isOnDiscovery = true;
     const deviceIds = this.data.devices.map(device => device.deviceId);
     this.data.commManager.checkMultipleOnlineStatus(deviceIds).then(statusMap => {
       let newDevices = [...this.data.devices];
@@ -20,6 +26,7 @@ Page({
       this.setData({
         devices: newDevices,
       })
+      this.data.isOnDiscovery = false;
       wx.stopPullDownRefresh();
     });
   },
