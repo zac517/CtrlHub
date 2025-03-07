@@ -6,6 +6,8 @@ Page({
       isWiFiOpen: false,
       mode: 0,
       modeLabel: ['均衡', '夜间', '专注', '自动'],
+      brightValue: 30 ,
+    
       buttons: [
         {
           name: 'power',
@@ -49,6 +51,13 @@ Page({
       ]
   },
   
+  brighttouch(e){
+      console.log(e.changedTouches[0].screenX)
+      this.setData({
+          brightValue: (e.changedTouches[0].screenX-109)/2.6
+      });
+  },
+
   onTouchStart(e) {
     let index = e.target.dataset.index;
     let newButton = {...this.data.buttons[index], isPressed: true};
