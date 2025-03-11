@@ -1,26 +1,65 @@
-// communicationManager.js
-import bluetoothManager from './bluetoothManager.js';
+import BluetoothManager from './bluetoothManager.js';
 import MqttManager from './mqttManager.js';
 
 class CommunicationManager {
   constructor() {
-    this.bluetoothManager = bluetoothManager;
+    this.bluetoothManager = new BluetoothManager();
     this.mqttManager = new MqttManager();
     this.deviceStatus = new Map(); // 设备状态缓存
     this.messageListeners = new Set();
     this.statusListeners = new Set();
+    this.connectionChangeListeners = new Set(); // 设备连接状态变化监听器
+    this.localStatusListeners = new Set(); // 本机状态变化监听器
   }
 
   // 初始化
-  init(options) {
-    this.bluetoothManager.initBluetooth({
-      config: options?.bluetooth,
+  async init(options) {
+    const {
+      bluetoothConfig,
+      mqttConfig,
+      onDeviceConnectionChange, // 设备连接状态变化回调
+      onLocalStatusChange,      // 本机状态变化回调
+      onAdapterRecovery         // 适配器恢复回调
+    } = options || {};
+
+    // 注册设备连接状态变化监听器
+    if (typeof onDeviceConnectionChange === 'function') {
+      this.connectionChangeListeners.add(onDeviceConnectionChange);
+    }
+
+    // 注册本机状态变化监听器
+    if (typeof onLocalStatusChange === 'function') {
+      this.localStatusListeners.add(onLocalStatusChange);
+    }
+
+    // 初始化蓝牙，使用回调列表
+    await this.bluetoothManager.initBluetooth({
+      config: bluetoothConfig,
       deviceChange: devices => this._updateDeviceStatus(devices),
-      adapterChange: state => this._notifyStatusChange('bluetooth', state),
-      messageReceived: (deviceId, message) => this._handleMessage(deviceId, message)
+      adapterChange: [
+        state => this._notifyLocalStatusChange('bluetooth', state),
+        state => {
+          if (state.available && onAdapterRecovery) {
+            onAdapterRecovery('bluetooth');
+          }
+        },
+      ],
+      connectionChange: res => {
+          if (!res.connected) {
+            this._notifyDeviceConnectionChange(res.deviceId, 'disconnected');
+          }
+      },
+      messageReceived: (deviceId, message) => this._handleMessage(deviceId, message),
     });
-    this.mqttManager.connect(options?.mqtt);
-    this.mqttManager.onConnectionStateChanged(state => this._notifyStatusChange('mqtt', state));
+
+    // 初始化 MQTT
+    this.mqttManager.connect(mqttConfig);
+    this.mqttManager.onConnectionStateChanged(state => {
+      this._notifyLocalStatusChange('mqtt', state);
+      if (state === 'connected' && onAdapterRecovery) {
+        onAdapterRecovery('mqtt');
+      }
+    });
     this.mqttManager.onMessageReceived((deviceId, message) => {
       this._handleMessage(deviceId, message);
     });
@@ -37,7 +76,7 @@ class CommunicationManager {
         this._checkMqttOnline(deviceId).catch(err => {
           console.error(`MQTT检测失败 (${deviceId}):`, err);
           return false;
-        })
+        }),
       ]);
 
       if (bluetoothOnline) {
@@ -66,7 +105,6 @@ class CommunicationManager {
     try {
       const [bluetoothResults, mqttResults] = await Promise.all([
         this.bluetoothManager.fastDiscovery(1000).then(bluetoothDevices => {
-          console.log(bluetoothDevices);
           const bluetoothOnlineDevices = new Set(bluetoothDevices.map(d => d.deviceId));
           return new Map(deviceIds.map(id => [id, bluetoothOnlineDevices.has(id)]));
         }).catch(err => {
@@ -94,7 +132,7 @@ class CommunicationManager {
         }).catch(err => {
           console.error('MQTT批量检测失败:', err);
           return new Map(deviceIds.map(id => [id, false]));
-        })
+        }),
       ]);
 
       deviceIds.forEach(id => {
@@ -132,18 +170,11 @@ class CommunicationManager {
   async sendMessage(deviceId, message) {
     const status = this.deviceStatus.get(deviceId);
     if (status === 'bluetooth') {
-      return this.bluetoothManager.sendMessage(deviceId, JSON.stringify(message));
+      return await this.bluetoothManager.sendMessage(deviceId, JSON.stringify(message));
     } else if (status === 'mqtt') {
-      return this.mqttManager.publish(deviceId, message);
+      return await this.mqttManager.publish(deviceId, message);
     } else {
-      // 设备未连接，尝试连接后重试
-      const connectionType = await this.connect(deviceId);
-      if (connectionType === 'bluetooth') {
-        return this.bluetoothManager.sendMessage(deviceId, JSON.stringify(message));
-      } else if (connectionType === 'mqtt') {
-        return this.mqttManager.publish(deviceId, message);
-      }
-      throw new Error('设备离线或连接失败');
+      throw new Error('设备离线');
     }
   }
 
@@ -152,24 +183,31 @@ class CommunicationManager {
     if (typeof callback === 'function') this.messageListeners.add(callback);
   }
 
-  // 监听状态变化
+  // 监听设备状态变化
   onDeviceStatusChanged(callback) {
     if (typeof callback === 'function') this.statusListeners.add(callback);
   }
 
+  // 监听设备连接状态变化
+  onDeviceConnectionChanged(callback) {
+    if (typeof callback === 'function') this.connectionChangeListeners.add(callback);
+  }
+
+  // 监听本机状态变化
+  onLocalStatusChanged(callback) {
+    if (typeof callback === 'function') this.localStatusListeners.add(callback);
+  }
+
   // 检查蓝牙在线
-  _checkBluetoothOnline(deviceId) {
-    return new Promise(resolve => {
-      this.bluetoothManager.startDiscovery();
-      setTimeout(() => {
-        this.bluetoothManager.stopDiscovery();
-        resolve(this.bluetoothManager.deviceMap.has(deviceId));
-      }, 10000); // 扫描10秒
-    });
+  async _checkBluetoothOnline(deviceId) {
+    await this.bluetoothManager.startDiscovery();
+    await new Promise(resolve => setTimeout(resolve, 10000)); // 扫描10秒
+    await this.bluetoothManager.stopDiscovery();
+    return this.bluetoothManager.deviceMap.has(deviceId);
   }
 
   // 检查 MQTT 在线
-  _checkMqttOnline(deviceId) {
+  async _checkMqttOnline(deviceId) {
     return new Promise(resolve => {
       this.mqttManager.subscribe(deviceId);
       this.mqttManager.publish(deviceId, { type: 'ping' });
@@ -204,10 +242,22 @@ class CommunicationManager {
     });
   }
 
+  // 通知设备状态变化
   _notifyStatusChange(id, state) {
     this.statusListeners.forEach(cb => cb(id, state));
   }
 
+  // 通知设备连接状态变化
+  _notifyDeviceConnectionChange(deviceId, state) {
+    this.connectionChangeListeners.forEach(cb => cb(deviceId, state));
+  }
+
+  // 通知本机状态变化
+  _notifyLocalStatusChange(type, state) {
+    this.localStatusListeners.forEach(cb => cb(type, state));
+  }
+
+  // 连接设备
   async connect(deviceId) {
     const currentStatus = this.deviceStatus.get(deviceId);
     if (currentStatus === 'bluetooth' || currentStatus === 'mqtt') {
@@ -216,7 +266,7 @@ class CommunicationManager {
 
     try {
       await this.bluetoothManager.connect(deviceId);
-      this.bluetoothManager.onMessageReceived(); // 启用通知
+      this.bluetoothManager.onMessageReceived(deviceId); // 启用通知
       this.deviceStatus.set(deviceId, 'bluetooth');
       this._notifyStatusChange(deviceId, 'bluetooth');
       return 'bluetooth';
@@ -247,6 +297,8 @@ class CommunicationManager {
       this.deviceStatus.clear();
       this.messageListeners.clear();
       this.statusListeners.clear();
+      this.connectionChangeListeners.clear();
+      this.localStatusListeners.clear();
       console.log('CommunicationManager 资源已关闭');
     } catch (err) {
       console.error('关闭 CommunicationManager 失败:', err);
@@ -254,4 +306,4 @@ class CommunicationManager {
   }
 }
 
-export default CommunicationManager;
+export default new CommunicationManager();
