@@ -1,5 +1,5 @@
-import bluetoothManager from '../../utils/bluetoothManager'
-import { generateRandomValues } from '../../utils/util'
+import BluetoothManager from '../../utils/bluetoothManager';
+import { generateRandomValues } from '../../utils/util';
 
 Page({
   data: {
@@ -8,45 +8,55 @@ Page({
     selectedDevice: null,
     newName: '',
     devicesBuffer: [],
+    bluetoothManager: null,
   },
 
-  // 这里没有拼写错
+  onLoad() {
+    this.init();
+  },
+
+  onUnload() {
+    this.data.bluetoothManager.closeBluetooth();
+  },
+
+  async init() {
+    const deviceInfo = wx.getDeviceInfo();
+    const platform = deviceInfo.platform;
+    console.log("当前平台为 " + platform);
+
+    if (platform !== 'devtools') {
+      console.log(this.data.bluetoothManager);
+      this.data.bluetoothManager = new BluetoothManager();
+      await this.data.bluetoothManager.initBluetooth({
+        deviceChange: this.updateDevices.bind(this),
+        adapterChange: this.updateAdapter.bind(this),
+        onAdapterRecovery: () => this.data.bluetoothManager.startDiscovery(),
+      });
+    }
+  },
+
+  // 返回制造商页面
   backToManu() {
     wx.redirectTo({
       url: '/pages/manufacturer/manufacturer',
     });
   },
 
-  onLoad(options) {
-    this.startBlE();
-  },
-
-  startBlE() {
-    const deviceInfo = wx.getDeviceInfo();
-    const platform = deviceInfo.platform;
-    console.log("当前平台为 " + platform);
-
-    if (platform !== 'devtools') {
-      bluetoothManager.initBluetooth({
-        deviceChange: this.updateDevices.bind(this),
-        adapterChange: this.updateAdapter.bind(this),
-        success: () => bluetoothManager.startDiscovery(),
-      });
-    };
-  },
-
+  // 更新设备列表
   updateDevices(devices) {
     this.setData({
       devices,
     });
   },
 
+  // 更新蓝牙适配器状态
   updateAdapter(state) {
     this.setData({
       bluetoothAvailable: state.available,
-    })
+    });
   },
 
+  // 选择设备
   onSelectDevice(e) {
     const device = this.data.devicesBuffer[e.detail.value];
     if (!device) return;
@@ -55,32 +65,28 @@ Page({
     });
   },
 
+  // 点击选择器
   onPickerTap() {
-    // 点击时将现在的列表保存下来 以防选择时列表更新导致选不到预期的设备
     if (this.data.bluetoothAvailable) {
       this.data.devicesBuffer = [...this.data.devices];
-    }
-    else {
+    } else {
       wx.showToast({
         title: '当前蓝牙不可用',
-        icon: 'none'
+        icon: 'none',
       });
     }
   },
 
-  bufferToString(buffer) {
-    return String.fromCharCode.apply(null, new Uint8Array(buffer));
-  },
-
+  // 添加设备
   async addDevices() {
-    let savedDevices = wx.getStorageSync('devices');
+    let savedDevices = wx.getStorageSync('devices') || []; // 确保初始值是一个数组
     const newDevice = {
       id: await generateRandomValues(),
       name: this.data.newName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
-      manufacturer: this.bufferToString(this.data.selectedDevice.advertisData),
+      manufacturer: this.data.bluetoothManager.bufferToString(this.data.selectedDevice.advertisData),
       isOnline: true,
-      isSelected: false
+      isSelected: false,
     };
     savedDevices = [newDevice, ...savedDevices];
     wx.setStorageSync('devices', savedDevices);
@@ -88,8 +94,4 @@ Page({
       url: '/pages/home/home',
     });
   },
-
-  onUnload() {
-    bluetoothManager.closeBluetooth();
-  },
-})
+});

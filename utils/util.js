@@ -9,13 +9,7 @@ function ab2hex(buffer){
     return hexArr.join('');
 }
 
-/**将16进制转化为ArrayBuffer*/
-function string2buffer(str){
-  return new Uint8Array(str.match(/[\da-f]{2}/gi).map(function (h) {
-    return parseInt(h, 16)
-  })).buffer
-}
-
+/**获取指定长度的随机十六进制字符串*/
 async function generateRandomValues(length = 6) {
   try {
       const randomValues = await new Promise((resolve, reject) => {
@@ -35,8 +29,6 @@ async function generateRandomValues(length = 6) {
   }
 }
 
-module.exports = {
+export default {
   generateRandomValues,
-  ab2hex,
-  string2buffer,
 }
