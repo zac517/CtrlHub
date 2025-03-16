@@ -3,15 +3,14 @@ Page({
     data: {
     },
 
-    // 返回函数
+    /**返回主页 */ 
     backToHome() {
-        wx.redirectTo({
-            url: '/pages/home/home',
-        });
+        wx.navigateBack();
     },
 
+    /**前往添加设备 */
     goToAdd() {
-        wx.redirectTo({
+        wx.navigateTo({
             url: '/pages/add/add',
         });
     },

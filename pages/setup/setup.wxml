@@ -1,0 +1,13 @@
+<view class="container">
+  <view class="header">
+    <text class="title">设置网络</text>
+    <view class="back-button icon-button" bind:tap="backToControl"><icon class="iconfont icon-back"/></view>
+  </view>
+  <view class="content">
+    <text class="add-title">选择网络</text>
+    <input placeholder="输入WiFi名称" model:value="{{ssid}}" class="device-input {{!bluetoothAvailable ? 'ban' : ''}}"/>
+    <text class="add-title">密码</text>
+    <input placeholder="输入密码" model:value="{{password}}" class="device-input {{!bluetoothAvailable ? 'ban' : ''}}"/>
+  </view>
+  <view class="complete {{ssid && password ? '' : 'ban'}}" bind:tap="{{ssid && password ? 'setWiFi' : '' }}">完成</view>
+</view>
