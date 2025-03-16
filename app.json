@@ -3,7 +3,8 @@
     "pages/home/home",
     "pages/add/add",
     "pages/control/control",
-    "pages/manufacturer/manufacturer"
+    "pages/manufacturer/manufacturer",
+    "pages/setup/setup"
   ],
   "window": {
     "navigationStyle": "custom"

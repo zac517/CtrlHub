@@ -1,4 +1,3 @@
-<!--pages/control/control.wxml-->
 <view class="container">
     <view class="header">
         <text class="title">{{name}}</text>
@@ -6,30 +5,32 @@
     </view>
     <view class="content">
         <view class="lamp">
-          <icon class="iconfont icon-lamp-{{isOpen ? 'on' : 'slash'}}"/>
+          <icon style="color: {{realColor}}"  class="iconfont icon-lamp-{{isOpen ? 'on' : 'slash'}}"/>
         </view>
         <view wx:if="{{isOpen}}" class="imformation">
-          <view class="imfo-child"><icon class="iconfont icon-mode"/>模式 {{modeLabel[mode]}}</view>
-          <view class="imfo-child"><icon class="iconfont icon-brightness"/>亮度 100%</view>
-          <view class="imfo-child" style="{{isWiFiOpen ? '' : 'opacity: 0'}}"><icon class="iconfont icon-wifi"/>WiFi 开启</view>
+          <view class="imfo-child"><icon class="iconfont icon-mode"/>模式{{modeLabel[mode]}}</view>
+          <view class="imfo-child"><icon class="iconfont icon-brightness"/>亮度 {{brightness}}%</view>
+          <view class="imfo-child" style="{{isWiFiOpen ? '' : 'opacity: 0'}}"><icon class="iconfont icon-wifi"/>WiFi {{isWiFiConnected ? '已连接' : '未连接'}}</view>
         </view>
     </view>
     <view class="panel">
-        <view 
-        wx:for="{{buttons}}" 
-        wx:key="index" 
-        class="panel-button {{item.isPressed ? 'pressed' : ''}} {{item.type == 'drag' ? 'long-button' : ''}} {{item.name == 'power' || isOpen ? '' : 'inactive'}} " 
-        bindtouchstart="{{item.name == 'power' || isOpen ? 'onTouchStart' : ''}}" 
-        bindtouchend="{{item.name == 'power' || isOpen ? 'onTouchEnd' : ''}}" 
-        bindtap="{{item.name == 'power' || isOpen ? item.bindtap : ''}}"
-        data-index="{{index}}">
-        <view wx:if="{{item.name == 'brightness'}}" class="brightnessview">
-            <!-- <view class="brightnesstext">亮度</view> -->
-            <slider class="brightnesswxss"  block-size='28' value="{{brightValue}}" show-value activeColor='#609ff8' backgroundColor="#c9dff"  bindtouchmove="brighttouch" ></slider>
-        </view>
-        <icon wx:if="{{item.name == 'power'}}" class="iconfont icon-power"/>
-        <!-- {{item.label}} -->
-        <view wx:if="{{item.type!='drag'}}">{{item.label}}</view>
+        <view wx:for="{{buttons}}" wx:key="index" class="panel-button {{item.type == 'drag' ? 'long-button' : ''}}">
+          <view wx:if="{{item.type == 'tap'}}" 
+          class="tap-wrapper {{item.isPressed ? 'pressed' : ''}} {{isOpen || item.name == 'power' ? '' : 'inactive'}}" 
+          bindtouchstart="{{isOpen || item.name == 'power' ? 'onTouchStart' : ''}}"
+          bindtouchend="{{isOpen || item.name == 'power' ? 'onTouchEnd' : ''}}"
+          bindtap="{{isOpen || item.name == 'power' ? 'onTap' : ''}}"
+          data-index="{{index}}">
+            <icon wx:if="{{item.name == 'power'}}" class="iconfont icon-power"/>
+            {{item.label}}
+          </view>
+
+          <view wx:if="{{item.type == 'drag'}}" 
+          class="drag-wrapper {{item.name == 'brightness' ? 'bright-wrapper' : ''}} {{item.name == 'color' ? 'color-wrapper' : ''}}" 
+          bindtouchmove="dragTouch" bindtouchstart="dragStart" 
+          bindtouchend="dragEnd" data-index="{{index}}">
+              <view wx:if="{{item.name == 'brightness'}}" class="bright-child" style="width: {{brightness + '%'}}"></view>
+          </view>
         </view>
     </view>
 </view>

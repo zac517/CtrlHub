@@ -2,37 +2,48 @@
 import Paho from "./paho-mqtt-min.js";
 
 class MqttManager {
-  constructor() {
+  constructor(config) {
     this.client = null;
     this.connected = false;
     this.messageListeners = new Set();
     this.connectionListeners = new Set();
     this.topicPrefix = 'Lumina'; // 默认主题前缀
+
+    this.config =  {
+      /**测试模式 */
+      testMode: true,
+      /**默认 WebSocket 地址 */
+      uris: 'wss://broker-cn.emqx.io:8084/mqtt',
+      /**连接超时时间（秒） */ 
+      timeout: 10,
+      /**持久会话 */ 
+      cleanSession: false,                      
+      /**心跳间隔 */
+      keepAliveInterval: 5,                     
+      /**自动重连 */
+      reconnect: true,                          
+      /**MQTT 3.1.1 版本 */
+      mqttVersion: 4,                           
+      onSuccess: () => {
+        this.connected = true;
+        this.connectionListeners.forEach(cb => cb(true));
+      },
+      onFailure: () => {
+        this.connected = false;
+        this.connectionListeners.forEach(cb => cb(false));
+      }
+    }
   }
 
   // 初始化并连接
   connect(options = {}) {
     // 默认配置
-    const defaultOptions = {
-      uris: ['wss://broker.emqx.io:8084/mqtt'], // 默认 WebSocket 地址
-      timeout: 10,                              // 连接超时时间（秒）
-      cleanSession: false,                      // 持久会话
-      keepAliveInterval: 5,                     // 心跳间隔（秒）
-      reconnect: true,                          // 自动重连
-      mqttVersion: 4,                           // MQTT 3.1.1 版本
-      onSuccess: () => {
-        this.connected = true;
-        this._notifyConnectionState(true);
-      },
-      onFailure: () => {
-        this.connected = false;
-        this._notifyConnectionState(false);
-      }
+    const config =
     };
 
     // 合并用户提供的配置
     const { uris, clientId, topicPrefix, ...restOptions } = options;
-    const connectOptions = { ...defaultOptions, ...restOptions };
+    const connectOptions = { ...config, ...restOptions };
 
     // 设置主题前缀（如果提供了新值）
     if (topicPrefix) {
@@ -90,8 +101,7 @@ class MqttManager {
   publish(deviceId, message) {
     if (!this.connected) return Promise.reject('MQTT未连接');
     const topic = `${this.topicPrefix}/devices/${deviceId}`;
-    const jsonData = JSON.stringify(message);
-    const mqttMessage = new Paho.Message(jsonData);
+    const mqttMessage = new Paho.Message(message);
     mqttMessage.destinationName = topic;
     mqttMessage.qos = 2;
     mqttMessage.retained = false;
@@ -110,10 +120,6 @@ class MqttManager {
     if (typeof callback === 'function') this.connectionListeners.add(callback);
   }
 
-  _notifyConnectionState(state) {
-    this.connectionListeners.forEach(cb => cb(state));
-  }
-
   // 断开连接
   disconnect() {
     if (this.client && this.connected) {
@@ -123,4 +129,6 @@ class MqttManager {
   }
 }
 
-export default MqttManager;
+/**MQTT模块 */
+const mqttManager = new MqttManager();
+export default mqttManager;

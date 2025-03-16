@@ -1,115 +1,216 @@
 class BluetoothManager {
-  constructor() {
-    this.config = {
-      restartInterval: 2000, // 重启适配器间隔
-      rssiThreshold: -80, // 信号阈值
-      testMode: true, // 测试模式
-      scanInterval: 2000, // 扫描间隔
-      expireTime: 5000, // 设备保留时间
-      updateInterval: 1000, // 设备列表更新间隔
-    };
+  constructor(config) {
+    const deviceInfo = wx.getDeviceInfo();
+    /**当前平台 */
+    this.platform = deviceInfo.platform;
 
-    // 使用 Set 管理回调
-    this.adapterChangeListeners = new Set();
-    this.deviceChangeListeners = new Set();
-    this.connectionChangeListeners = new Set();
-    this.messageReceivedListeners = new Set();
-    this.onAdapterRecoveryListeners = new Set();
+    if (this._checkLevels(0)) {
+      /**配置 */
+      this.config = {
+        /**测试模式 */
+        testMode: true,
+        /**扫描间隔 */
+        scanInterval: 2000,
+        /**信号阈值 */
+        rssiThreshold: -80,
+      };
+      this.config = { ...this.config, ...config };
+      if (this.config.testMode) console.log('蓝牙模块初始化');
+  
+      this.adapterChangeListeners = new Set();
+      this.deviceChangeListeners = new Set();
+      this.connectionChangeListeners = new Set();
+      this.messageReceivedListeners = new Set();
 
-    this.adapterState = { available: false, discovering: false };
-    this.realRestartInterval = 2000;
-    this.shouldRetryOpen = false,
+      /**任务 */
+      this.task = null;
+      /**蓝牙适配器状态 */
+      this.adapterState = { available: false, discovering: false };
+      /**已发现的设备 */
+      this.devices = new Map();
+      /**快速扫描发现的设备 */
+      this.fastDevices = new Map();
+      /**已连接的设备 */
+      this.connectedDevices = new Map();
 
-    this.devices = [];
-    this.deviceMap = new Map();
-    this.updateTimer = null;
-
-    this.connectedDevices = new Map();
+      this.init();
+    }
   }
 
-  /**初始化蓝牙模块 */ 
-  async initBluetooth(options = {}) {
-    if (this.config.testMode) console.log('initBluetooth');
-    this.config = { ...this.config, ...options.config };
+  /**初始化函数 
+   * 
+   * 由于添加监听器需要在尝试开启适配器后进行，而构造函数不支持`async`标识符，而设计
+  */
+  async init() {
+    if (this.config.testMode) console.log('尝试开启蓝牙适配器');
+    try {
+      await wx.openBluetoothAdapter();
+      this.adapterState = { available: true, discovering: false };
+    } catch (err) {
+      console.log('开启蓝牙适配器失败: ' + err);
+    }
 
-    this._registerCallbacks(options.deviceChange, this.deviceChangeListeners);
-    this._registerCallbacks(options.adapterChange, this.adapterChangeListeners);
-    this._registerCallbacks(options.connectionChange, this.connectionChangeListeners);
-    this._registerCallbacks(options.messageReceived, this.messageReceivedListeners);
-    this._registerCallbacks(options.onAdapterRecovery, this.onAdapterRecoveryListeners);
-
+    /**添加适配器状态变化监听器 */
     wx.onBluetoothAdapterStateChange(res => {
-      if (this.config.testMode) console.log('adapterChange: ' + res.available + ', ' + res.discovering);
+      if (this.config.testMode) console.log('蓝牙适配器状态变化为: ' + JSON.stringify(res));
       const lastAdapterState = this.adapterState;
       this.adapterState = res;
       this.adapterChangeListeners.forEach(cb => cb(res));
       if (!lastAdapterState.available && res.available) {
-        if (this.config.testMode) console.log('onAdapterRecovery');
-        this.onAdapterRecoveryListeners.forEach(cb => cb());
+        if (this.config.testMode) console.log('蓝牙适配器恢复');
+        if (this.task?.recover) this.task.recover();
       }
     });
 
-    this.shouldRetryOpen = true;
-    this.realRestartInterval = this.config.restartInterval;
-    await this._openBluetooth();
-  }
-
-  /**关闭蓝牙模块 */
-  closeBluetooth() {
-    if (this.config.testMode) console.log('closeBluetooth');
-    this.stopDiscovery();
-    wx.offBluetoothAdapterStateChange();
-    wx.closeBluetoothAdapter();
-  }
-
-  /**开始扫描 */
-  async startDiscovery(mode = 'continuous') {
-    if (this.config.testMode) console.log('startDiscovery');
-    this.deviceMap.clear();
-    this.devices = [];
-    if (this.adapterState?.available) {
-      try {
-        if (mode === 'continuous') {
-          await wx.startBluetoothDevicesDiscovery({
-            allowDuplicatesKey: true,
-            interval: this.config.scanInterval,
-          });
-          this._listenDeviceFound('continuous');
-          this.updateTimer = setInterval(() => this._updateDevices(), this.config.updateInterval);
-        } else if (mode === 'fast') {
-          await wx.startBluetoothDevicesDiscovery({
-            allowDuplicatesKey: true,
-            powerLevel: 'high',
-          });
-          this._listenDeviceFound('fast');
+    /**添加设备发现监听器 */
+    wx.onBluetoothDeviceFound(res => {
+      if (this.config.testMode) console.log('蓝牙发现设备');
+      console.log(res.devices);
+      res.devices.forEach(device => {
+        if (device.name && device.RSSI > this.config.rssiThreshold) {
+          this.devices.set(device.deviceId, device);
+          this.fastDevices.set(device.deviceId, device);
         }
+      });
+      this.deviceChangeListeners.forEach(cb => cb(Array.from(this.devices.values())));
+      this.devices.clear();
+    });
+
+    /**添加设备连接监听器 */
+    wx.onBLEConnectionStateChange(res => {
+      if (this.config.testMode) console.log('蓝牙设备连接状态变化');
+      if (!res.connected) this.connectedDevices.delete(res.deviceId);
+      this.connectionChangeListeners.forEach(cb => cb(res));
+    });
+
+    /**添加消息监听器 */
+    wx.onBLECharacteristicValueChange(res => {
+      if (this.config.testMode) console.log('蓝牙收到消息');
+      this.messageReceivedListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
+    });
+  }
+
+  /**检查条件 */
+  _checkLevels(level, deviceId = '') {
+    if (this.platform == 'devtools') {
+      console.log("当前平台为 devtools，不支持蓝牙相关功能");
+      return false;
+    };
+    if (level == 0) return true;
+
+
+    if (!this.adapterState.available) {
+      console.log("蓝牙适配器未开启");
+      return false;
+    };
+    if (level == 1) return true;
+
+
+    if (deviceId == '') {
+      console.log("蓝牙 _checkLevels 方法调用有误：未提供 deviceId")
+    }
+    if (!this.connectedDevices.has(deviceId)) {
+      console.log(`蓝牙未连接到设备 ${deviceId}`);
+      return false;
+    };
+    if (level == 2) return true;
+
+
+    const device = this.connectedDevices.get(deviceId);
+    const serviceData = device.serviceData;
+    if (!serviceData || serviceData.length === 0) {
+      console.log(`设备 ${deviceId} 的服务 id 未找到`);
+      return false;
+    };
+    if (level == 3) return true;
+
+
+    const service = serviceData[0];
+    const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
+    const notifyChar = service.characteristics.find(char => char.properties.notify || char.properties.indicate);
+    if (!writableChar || !notifyChar) {
+      console.log(`设备 ${deviceId} 未找到可用特征值`);
+      return false;
+    };
+    if (level == 4) return true;
+
+
+    return false;
+  }
+
+  /**初始化并开始任务函数 */
+  begin(options) {
+    if (this._checkLevels(0)) {
+      this.task = options.task;
+      this._registerCallbacks(options.onAdapterChange, this.adapterChangeListeners);
+      this._registerCallbacks(options.onDeviceChange, this.deviceChangeListeners);
+      this._registerCallbacks(options.onConnectionChange, this.connectionChangeListeners);
+      this._registerCallbacks(options.onMessageReceived, this.messageReceivedListeners);
+      console.log(this.task);
+      if (this.task?.setup) this.task.setup();
+    }
+  }
+
+  /**结束任务函数 */
+  finish() {
+    if (this._checkLevels(0)) {
+      if (this.task?.end) this.task.end();
+      this.task = null;
+      this.adapterChangeListeners.clear();
+      this.deviceChangeListeners.clear();
+      this.connectionChangeListeners.clear();
+      this.messageReceivedListeners.clear();
+    }
+  }
+
+  /**开启扫描 */
+  async startDiscovery(fast = false) {
+    if (this._checkLevels(1)) {
+      if (this.config.testMode) console.log('蓝牙开启扫描');
+      try {
+        await wx.startBluetoothDevicesDiscovery({
+          allowDuplicatesKey: true,
+          interval: fast ? 0 : this.config.scanInterval,
+          powerLevel: fast ? 'high' : 'medium',
+        });
       } catch (err) {
-        console.error('startDiscovery failed:', err);
+        console.error('蓝牙开启扫描失败:', err);
       }
     }
   }
 
   /**快速扫描 */
   async fastDiscovery(duration = 1000) {
-    if (this.config.testMode) console.log('fastDiscovery');
-    await this.startDiscovery('fast');
-    await new Promise(resolve => setTimeout(resolve, duration));
-    this.stopDiscovery();
-    return Array.from(this.deviceMap.values());
-  }
-
-  /**停止扫描 */
-  async stopDiscovery() {
-    if (this.config.testMode) console.log('stopDiscovery');
-    await wx.stopBluetoothDevicesDiscovery();
-    wx.offBluetoothDeviceFound();
-    if (this.updateTimer) {
-      clearInterval(this.updateTimer);
-      this.updateTimer = null;
+    if (this._checkLevels(1)) {
+      if (this.config.testMode) console.log('蓝牙快速扫描');
+      this.fastDevices.clear();
+      try {
+        await this.startDiscovery('fast');
+        await new Promise(resolve => setTimeout(resolve, duration));
+        await this.stopDiscovery();
+      } catch (err) {
+        console.error('蓝牙快速扫描失败:', err);
+      }
+      return Array.from(this.fastDevices.values());
+    }
+    else {
+      return [];
     }
   }
 
-  /**注册回调，支持列表或单个函数*/
+  /**关闭扫描 */
+  async stopDiscovery() {
+    if (this._checkLevels(1)) {
+      if (this.config.testMode) console.log('蓝牙关闭扫描');
+      try {
+        await wx.stopBluetoothDevicesDiscovery();
+      } catch (err) {
+        console.error('蓝牙关闭扫描失败:', err);
+      }
+    }
+  }
+
+  /**注册回调，支持列表或单个函数 */
   _registerCallbacks(callbacks, listenerSet) {
     if (Array.isArray(callbacks)) {
       callbacks.forEach(cb => {
@@ -120,148 +221,98 @@ class BluetoothManager {
     }
   }
 
-  /**开启蓝牙适配器*/
-  async _openBluetooth() {
-    if (this.config.testMode) console.log('openBluetooth');
-    if (this.adapterState.available) {
-      console.log("已开启？");
-      return;
-    }
-    try {
-      await wx.openBluetoothAdapter();
-      const newState = { available: true, discovering: false };
-      this.adapterState = newState;
-      if (this.config.testMode) console.log('onAdapterRecovery');
-      this.adapterChangeListeners.forEach(cb => cb(newState));
-      this.onAdapterRecoveryListeners.forEach(cb => cb());
-    } catch (err) {
-      if (this.shouldRetryOpen) {
-        setTimeout(() => this._openBluetooth(), this.realRestartInterval);
-        this.realRestartInterval *= 1.5;
-      }
-    }
-  }
-
-  /**监听设备发现 */
-  _listenDeviceFound(mode) {
-    if (this.config.testMode) console.log('listenDeviceFound');
-    wx.offBluetoothDeviceFound();
-    wx.onBluetoothDeviceFound(res => {
-      if (this.config.testMode) console.log('deviceFound');
-      res.devices.forEach(device => {
-        if (device.name && device.RSSI > this.config.rssiThreshold) {
-          if (mode === 'continuous') {
-            const enhancedDevice = { ...device, lastSeen: Date.now() };
-            this.deviceMap.set(device.deviceId, enhancedDevice);
-          } else if (mode === 'fast') {
-            this.deviceMap.set(device.deviceId, device);
-          }
-        }
-      });
-    });
-  }
-
-  /**更新设备列表 */
-  _updateDevices() {
-    const now = Date.now();
-    this.deviceMap.forEach((device, deviceId) => {
-      if (now - device.lastSeen > this.config.expireTime) {
-        this.deviceMap.delete(deviceId);
-      }
-    });
-    this.devices = Array.from(this.deviceMap.values());
-    this.deviceChangeListeners.forEach(cb => cb(this.devices));
-  }
-
-  /**连接设备并记录服务和特征值*/
+  /**连接设备并记录服务和特征值 */
   async connect(deviceId) {
-    if (this.config.testMode) console.log('connect');
-    if (this.connectedDevices.has(deviceId)) return true;
-    try {
-      await wx.createBLEConnection({ deviceId });
-      this.connectedDevices.set(deviceId, { serviceData: null });
-      wx.onBLEConnectionStateChange(res => {
-        if (!res.connected && res.deviceId === deviceId) {
-          this.connectedDevices.delete(deviceId);
-          this.connectionChangeListeners.forEach(cb => cb(res));
-        }
-      });
-      const serviceData = await this._discoverServicesAndCharacteristics(deviceId);
-      this.connectedDevices.get(deviceId).serviceData = serviceData;
-      return true;
-    } catch (err) {
-      console.error('connect failed:', err);
-      throw err;
+    if (this._checkLevels(1)) {
+      if (this.config.testMode) console.log('蓝牙连接设备');
+      try {
+        await wx.createBLEConnection({ deviceId });
+        this.connectedDevices.set(deviceId, { serviceData: null });
+        const serviceData = await this._discoverServicesAndCharacteristics(deviceId);
+        this.connectedDevices.get(deviceId).serviceData = serviceData;
+        this._onMessageReceived(deviceId, true);
+        return true;
+      } catch (err) {
+        console.error('蓝牙连接设备失败: ', err);
+        throw err;
+      }
     }
   }
 
-  /**发现服务和特征值*/
+  /**发现服务和特征值 */
   async _discoverServicesAndCharacteristics(deviceId) {
-    if (this.config.testMode) console.log('discoverServicesAndCharacteristics');
-    try {
-      const servicesRes = await wx.getBLEDeviceServices({ deviceId });
-      const services = servicesRes.services;
-      const servicePromises = services.map(service =>
-        wx.getBLEDeviceCharacteristics({ deviceId, serviceId: service.uuid })
-          .then(charRes => ({ serviceId: service.uuid, characteristics: charRes.characteristics }))
-      );
-      return await Promise.all(servicePromises);
-    } catch (err) {
-      console.error('discoverServicesAndCharacteristics failed:', err);
-      throw err;
+    if (this._checkLevels(2, deviceId)) {
+      if (this.config.testMode) console.log('蓝牙发现服务和特征值');
+      try {
+        const servicesRes = await wx.getBLEDeviceServices({ deviceId });
+        const services = servicesRes.services;
+        const servicePromises = services.map(async service => {
+          const charRes = await wx.getBLEDeviceCharacteristics({ deviceId, serviceId: service.uuid });
+          return { serviceId: service.uuid, characteristics: charRes.characteristics };
+        });
+        return await Promise.all(servicePromises);
+      } catch (err) {
+        console.error('蓝牙发现服务和特征值失败: ', err);
+        throw err;
+      }
     }
   }
 
-  /**发送消息*/
+  /**发送消息 */
   async sendMessage(deviceId, message) {
-    if (this.config.testMode) console.log('sendMessage');
-    const device = this.connectedDevices.get(deviceId);
-    if (!device) throw new Error('Device not connected');
-    const serviceData = device.serviceData;
-    if (!serviceData || serviceData.length === 0) throw new Error('No services found for this device');
-    const service = serviceData[0];
-    const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
-    if (!writableChar) throw new Error('No writable characteristic found');
-    try {
-      await wx.writeBLECharacteristicValue({
-        deviceId,
-        serviceId: service.serviceId,
-        characteristicId: writableChar.uuid,
-        value: this._stringToBuffer(message),
-      });
-    } catch (err) {
-      console.error('sendMessage failed:', err);
-      throw err;
+    if (this._checkLevels(4, deviceId)) {
+      if (this.config.testMode) console.log('蓝牙发送消息');
+      const device = this.connectedDevices.get(deviceId);
+      const service = device.serviceData[0];
+      const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
+      try {
+        await wx.writeBLECharacteristicValue({
+          deviceId,
+          serviceId: service.serviceId,
+          characteristicId: writableChar.uuid,
+          value: this._stringToBuffer(message),
+        });
+      } catch (err) {
+        console.error('蓝牙发送消息失败: ', err);
+        throw err;
+      }
     }
   }
 
-  /**启用消息接收通知*/
-  onMessageReceived(deviceId) {
-    if (this.config.testMode) console.log('onMessageReceived');
-    wx.onBLECharacteristicValueChange(res => {
-      if (this.config.testMode) console.log('messageReceived');
-      this.messageReceivedListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
-    });
-    const device = this.connectedDevices.get(deviceId);
-    if (device && device.serviceData && device.serviceData.length > 0) {
+  /**修改消息接收通知 */
+  async _onMessageReceived(deviceId, state) {
+    if (this._checkLevels(4, deviceId)) {
+      if (this.config.testMode) console.log('修改蓝牙消息通知');
+      const device = this.connectedDevices.get(deviceId);
       const service = device.serviceData[0];
       const notifyChar = service.characteristics.find(char => char.properties.notify || char.properties.indicate);
-      if (notifyChar) {
-        wx.notifyBLECharacteristicValueChange({
+      try {
+        await wx.notifyBLECharacteristicValueChange({
           deviceId,
           serviceId: service.serviceId,
           characteristicId: notifyChar.uuid,
-          state: true,
+          state,
         });
+      } catch (err) {
+        console.error('修改蓝牙消息通知失败: ', err);
+        throw err;
       }
     }
   }
 
-  /**断开连接*/
-  disconnect(deviceId) {
-    if (!this.connectedDevices.has(deviceId)) return;
-    wx.closeBLEConnection({ deviceId });
-    this.connectedDevices.delete(deviceId);
+  /**断开连接 */
+  async disconnect(deviceId) {
+    if (this._checkLevels(2, deviceId)) {
+      if (this.config.testMode) console.log('断开蓝牙设备连接');
+      try {
+        await this._onMessageReceived(deviceId, false);
+        await wx.closeBLEConnection({ deviceId });
+        return true;
+      } catch (err) {
+        console.error('断开蓝牙设备连接失败: ', err);
+        throw err;
+      }
+    }
   }
 
   /**将字符串转化为ArrayBuffer */
@@ -279,4 +330,4 @@ class BluetoothManager {
   }
 }
 
-export default BluetoothManager;
+export default new BluetoothManager();

@@ -4,5 +4,25 @@
   "setting": {
     "compileHotReLoad": true
   },
-  "libVersion": "3.6.6"
+  "libVersion": "3.6.6",
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/add/add",
+          "pathName": "pages/add/add",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/control/control",
+          "pathName": "pages/control/control",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        }
+      ]
+    }
+  }
 }
