@@ -44,7 +44,7 @@ Page({
    */
   async refresh() {
     if (this.data.isOnDiscovery) {
-      wx.stopPullDownRefresh();
+      await wx.stopPullDownRefresh();
       return;
     }
     this.data.isOnDiscovery = true;
@@ -186,9 +186,17 @@ Page({
       this.handleCheckboxChange(e);
     } else {
       if (e.currentTarget.dataset.device.manufacturer == "Lumina") {
-        wx.redirectTo({
-          url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}`,
-        });
+        if (e.currentTarget.dataset.device.isOnline) {
+          wx.navigateTo({
+            url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}`,
+          });
+        }
+        else {
+          wx.showToast({
+            title: '当前设备已离线',
+            icon: 'none',
+          });
+        }
       } else {
         wx.showToast({
           title: '暂不支持控制此类设备',

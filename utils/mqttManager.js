@@ -1,130 +1,171 @@
-// mqttManager.js
 import Paho from "./paho-mqtt-min.js";
 
 class MqttManager {
   constructor(config) {
-    this.client = null;
-    this.connected = false;
-    this.messageListeners = new Set();
-    this.connectionListeners = new Set();
-    this.topicPrefix = 'Lumina'; // 默认主题前缀
-
-    this.config =  {
+    /**配置 */
+    this.config = {
       /**测试模式 */
       testMode: true,
       /**默认 WebSocket 地址 */
-      uris: 'wss://broker-cn.emqx.io:8084/mqtt',
-      /**连接超时时间（秒） */ 
-      timeout: 10,
-      /**持久会话 */ 
-      cleanSession: false,                      
-      /**心跳间隔 */
-      keepAliveInterval: 5,                     
-      /**自动重连 */
-      reconnect: true,                          
-      /**MQTT 3.1.1 版本 */
-      mqttVersion: 4,                           
-      onSuccess: () => {
-        this.connected = true;
-        this.connectionListeners.forEach(cb => cb(true));
-      },
-      onFailure: () => {
-        this.connected = false;
-        this.connectionListeners.forEach(cb => cb(false));
+      uri: 'wss://broker-cn.emqx.io:8084/mqtt',
+      /**客户端 ID */ 
+      clientId: 'wx_' + Date.now(),
+      /**主题前缀 */
+      topicPrefix: 'Lumina',
+
+      /**连接配置 */
+      connectOptions: {
+        useSSL: true,
+        timeout: 10,
+        cleanSession: false,
+        keepAliveInterval: 5,
+        reconnect: true,
+        mqttVersion: 4, 
+        onSuccess: () => {
+          this.connected = true;
+          if (this.config.testMode) console.log('连接 MQTT 服务器成功');
+          this.stateListeners.forEach(cb => cb(true));
+          if (this.task?.recover) this.task.recover();
+        },
+        onFailure: () => {
+          console.log('连接 MQTT 服务器失败')
+          this.connected = false;
+        }
       }
     }
+
+    this.config = { ...this.config, ...config };
+    if (this.config.testMode) console.log('MQTT 模块初始化');
+
+    this.stateListeners = new Set();
+    this.messageListeners = new Set();
+
+    /**任务 */
+    this.task = null;
+    /**mqtt 客户端 */
+    this.client = null;
+    /**服务器连接状态 */
+    this.connected = false;
+    
+    this.init();
   }
 
-  // 初始化并连接
-  connect(options = {}) {
-    // 默认配置
-    const config =
-    };
-
-    // 合并用户提供的配置
-    const { uris, clientId, topicPrefix, ...restOptions } = options;
-    const connectOptions = { ...config, ...restOptions };
-
-    // 设置主题前缀（如果提供了新值）
-    if (topicPrefix) {
-      this.topicPrefix = topicPrefix;
-    }
-
-    // 确保 uris 存在
-    if (uris) {
-      connectOptions.uris = uris;
-    }
-
+  /**初始化并连接 */
+  init() {
+    if (this.config.testMode) console.log('尝试连接MQTT服务器');
     // 创建 Paho MQTT 客户端
-    // 从 uris 中解析主机名和端口（仅用于 Paho.Client 的构造函数）
+    const uri = this.config.uri;
+    const host = uri.split('://')[1].split(':')[0];
+    const port = Number(uri.includes(':') ? uri.split(':')[2].split('/')[0] : 8084);
+    const clientId = this.config.clientId;
+    const connectOptions = this.config.connectOptions;
+    this.topicPrefix = this.config.topicPrefix;
     try {
-      const uri = connectOptions.uris[0];
-      const host = uri.split('://')[1].split(':')[0];
-      const port = Number(uri.includes(':') ? uri.split(':')[2].split('/')[0] : 8084);
-
-      // 创建客户端，clientId 作为第三个参数传递，而不是在 connectOptions 中
-      this.client = new Paho.Client(host, port, clientId || `wx_${Date.now()}`);
+      this.client = new Paho.Client(host, port, clientId);
     } catch (e) {
-      console.error('创建 MQTT 客户端失败，检查 uris 配置:', e);
+      console.error('创建 MQTT 客户端失败: ', e);
       throw e;
     }
 
     // 连接
     this.client.connect(connectOptions);
 
-    // 设置断连和消息到达的监听
+    // 断连监听
     this.client.onConnectionLost = () => {
       this.connected = false;
-      this._notifyConnectionState(false);
+      this.stateListeners.forEach(cb => cb(false));
     };
 
+    // 消息监听
     this.client.onMessageArrived = msg => {
-      try {
-        const jsonData = JSON.parse(msg.payloadString);
-        // 从主题中提取 deviceId，假设主题格式为 `${topicPrefix}/devices/{deviceId}`
-        const deviceId = msg.destinationName.split('/').pop();
-        this.messageListeners.forEach(cb => cb(deviceId, jsonData));
-      } catch (e) {
-        console.error('MQTT消息解析失败:', e);
-      }
+      const topic = msg.destinationName;
+      const deviceId = topic.split('/').slice(-2)[0];
+      if (this.config.testMode) console.log('收到消息: ', deviceId, msg.payloadString);
+      this.messageListeners.forEach(cb => cb(deviceId, msg.payloadString));
     };
   }
 
-  // 订阅
+  /**初始化并开始任务函数 */
+  begin(options) {
+    if (this.connected) {
+      this.task = options.task;
+      this._registerCallbacks(options.onStateChange, this.stateListeners);
+      this._registerCallbacks(options.onMessageReceived, this.messageListeners);
+      if (this.task?.setup) this.task.setup();
+    }
+    else {
+      console.log('MQTT未连接');
+    }
+  }
+
+  /**结束任务函数 */
+  finish() {
+    if (this._checkLevels(0)) {
+      if (this.task?.end) this.task.end();
+      this.task = null;
+      this.stateListeners.clear();
+      this.messageListeners.clear();
+    }
+  }
+
+  /**订阅设备 */
   subscribe(deviceId) {
-    if (!this.connected) return;
-    const topic = `${this.topicPrefix}/devices/${deviceId}`;
-    this.client.subscribe(topic, { qos: 2 });
+    if (this.connected) {
+      const topic = `${this.topicPrefix}/devices/${deviceId.toLowerCase()}/state`;
+      console.log('监听' + topic);
+      this.client.subscribe(topic, { qos: 2 });
+    }
+    else {
+      console.log('MQTT未连接');
+    }
   }
 
-  // 发送消息
+  /**取消订阅设备 */
+  unsubscribe(deviceId) {
+    if (this.connected) {
+      const topic = `${this.topicPrefix}/devices/${deviceId.toLowerCase()}/state`;
+      this.client.unsubscribe(topic);
+    }
+    else {
+      console.log('MQTT未连接');
+    }
+  }
+
+  /**发送消息 */
   publish(deviceId, message) {
-    if (!this.connected) return Promise.reject('MQTT未连接');
-    const topic = `${this.topicPrefix}/devices/${deviceId}`;
-    const mqttMessage = new Paho.Message(message);
-    mqttMessage.destinationName = topic;
-    mqttMessage.qos = 2;
-    mqttMessage.retained = false;
-    mqttMessage.contentType = 'application/json';
-    this.client.send(mqttMessage);
-    return Promise.resolve();
+    if (this.connected) {
+      const topic = `${this.topicPrefix}/devices/${deviceId.toLowerCase()}/control`;
+      const mqttMessage = new Paho.Message(message);
+      mqttMessage.destinationName = topic;
+      mqttMessage.qos = 2;
+      mqttMessage.retained = false;
+      mqttMessage.contentType = 'application/json';
+      this.client.send(mqttMessage);
+    }
+    else {
+      console.log('MQTT未连接');
+    }
   }
 
-  // 监听消息
-  onMessageReceived(callback) {
-    if (typeof callback === 'function') this.messageListeners.add(callback);
-  }
-
-  // 监听连接状态
-  onConnectionStateChanged(callback) {
-    if (typeof callback === 'function') this.connectionListeners.add(callback);
-  }
-
-  // 断开连接
+  /** 断开连接 */
   disconnect() {
     if (this.client && this.connected) {
       this.client.disconnect();
       this.connected = false;
+    }
+    else {
+      console.log('MQTT未连接');
+    }
+  }
+
+  /**注册回调，支持列表或单个函数 */
+  _registerCallbacks(callbacks, listenerSet) {
+    if (Array.isArray(callbacks)) {
+      callbacks.forEach(cb => {
+        if (typeof cb === 'function') listenerSet.add(cb);
+      });
+    } else if (typeof callbacks === 'function') {
+      listenerSet.add(callbacks);
     }
   }
 }

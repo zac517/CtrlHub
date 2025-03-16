@@ -17,15 +17,15 @@ class BluetoothManager {
       this.config = { ...this.config, ...config };
       if (this.config.testMode) console.log('蓝牙模块初始化');
   
-      this.adapterChangeListeners = new Set();
-      this.deviceChangeListeners = new Set();
-      this.connectionChangeListeners = new Set();
-      this.messageReceivedListeners = new Set();
+      this.stateListeners = new Set();
+      this.deviceListeners = new Set();
+      this.connectionListeners = new Set();
+      this.messageListeners = new Set();
 
       /**任务 */
       this.task = null;
       /**蓝牙适配器状态 */
-      this.adapterState = { available: false, discovering: false };
+      this.state = { available: false, discovering: false };
       /**已发现的设备 */
       this.devices = new Map();
       /**快速扫描发现的设备 */
@@ -45,7 +45,7 @@ class BluetoothManager {
     if (this.config.testMode) console.log('尝试开启蓝牙适配器');
     try {
       await wx.openBluetoothAdapter();
-      this.adapterState = { available: true, discovering: false };
+      this.state = { available: true, discovering: false };
     } catch (err) {
       console.log('开启蓝牙适配器失败: ' + err);
     }
@@ -53,10 +53,10 @@ class BluetoothManager {
     /**添加适配器状态变化监听器 */
     wx.onBluetoothAdapterStateChange(res => {
       if (this.config.testMode) console.log('蓝牙适配器状态变化为: ' + JSON.stringify(res));
-      const lastAdapterState = this.adapterState;
-      this.adapterState = res;
-      this.adapterChangeListeners.forEach(cb => cb(res));
-      if (!lastAdapterState.available && res.available) {
+      const lastState = this.state;
+      this.state = res;
+      this.stateListeners.forEach(cb => cb(res));
+      if (!lastState.available && res.available) {
         if (this.config.testMode) console.log('蓝牙适配器恢复');
         if (this.task?.recover) this.task.recover();
       }
@@ -65,14 +65,13 @@ class BluetoothManager {
     /**添加设备发现监听器 */
     wx.onBluetoothDeviceFound(res => {
       if (this.config.testMode) console.log('蓝牙发现设备');
-      console.log(res.devices);
       res.devices.forEach(device => {
         if (device.name && device.RSSI > this.config.rssiThreshold) {
           this.devices.set(device.deviceId, device);
           this.fastDevices.set(device.deviceId, device);
         }
       });
-      this.deviceChangeListeners.forEach(cb => cb(Array.from(this.devices.values())));
+      this.deviceListeners.forEach(cb => cb(Array.from(this.devices.values())));
       this.devices.clear();
     });
 
@@ -80,13 +79,13 @@ class BluetoothManager {
     wx.onBLEConnectionStateChange(res => {
       if (this.config.testMode) console.log('蓝牙设备连接状态变化');
       if (!res.connected) this.connectedDevices.delete(res.deviceId);
-      this.connectionChangeListeners.forEach(cb => cb(res));
+      this.connectionListeners.forEach(cb => cb(res));
     });
 
     /**添加消息监听器 */
     wx.onBLECharacteristicValueChange(res => {
       if (this.config.testMode) console.log('蓝牙收到消息');
-      this.messageReceivedListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
+      this.messageListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
     });
   }
 
@@ -99,7 +98,7 @@ class BluetoothManager {
     if (level == 0) return true;
 
 
-    if (!this.adapterState.available) {
+    if (!this.state.available) {
       console.log("蓝牙适配器未开启");
       return false;
     };
@@ -142,11 +141,10 @@ class BluetoothManager {
   begin(options) {
     if (this._checkLevels(0)) {
       this.task = options.task;
-      this._registerCallbacks(options.onAdapterChange, this.adapterChangeListeners);
-      this._registerCallbacks(options.onDeviceChange, this.deviceChangeListeners);
-      this._registerCallbacks(options.onConnectionChange, this.connectionChangeListeners);
-      this._registerCallbacks(options.onMessageReceived, this.messageReceivedListeners);
-      console.log(this.task);
+      this._registerCallbacks(options.onStateChange, this.stateListeners);
+      this._registerCallbacks(options.onDeviceChange, this.deviceListeners);
+      this._registerCallbacks(options.onConnectionChange, this.connectionListeners);
+      this._registerCallbacks(options.onMessageReceived, this.messageListeners);
       if (this.task?.setup) this.task.setup();
     }
   }
@@ -156,10 +154,10 @@ class BluetoothManager {
     if (this._checkLevels(0)) {
       if (this.task?.end) this.task.end();
       this.task = null;
-      this.adapterChangeListeners.clear();
-      this.deviceChangeListeners.clear();
-      this.connectionChangeListeners.clear();
-      this.messageReceivedListeners.clear();
+      this.stateListeners.clear();
+      this.deviceListeners.clear();
+      this.connectionListeners.clear();
+      this.messageListeners.clear();
     }
   }
 

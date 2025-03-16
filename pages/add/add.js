@@ -12,7 +12,7 @@ Page({
 
   async onLoad() {
     BluetoothManager.begin({
-      onAdapterChange: this.updateAdapter.bind(this),
+      onStateChange: this.updateState.bind(this),
       onDeviceChange: this.updateDevices.bind(this),
       task: {
         setup: () => BluetoothManager.startDiscovery(),
@@ -37,7 +37,7 @@ Page({
   },
 
   /**更新蓝牙适配器状态 */ 
-  updateAdapter(state) {
+  updateState(state) {
     this.setData({ bluetoothAvailable: state.available });
   },
 

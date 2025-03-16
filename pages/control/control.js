@@ -5,7 +5,6 @@ Page({
   data: {
     name: '',
     deviceId: '',
-    commManager: null,
 
     isOpen: false,
 
@@ -112,24 +111,20 @@ Page({
       name: options.name,
       deviceId: options.deviceId,
     });
-    this.data.commManager = new CommunicationManager();
-    let commManager = this.data.commManager;
     let deviceId = this.data.deviceId;
 
-    await commManager.init({
-      onAdapterRecovery: async (type) => {
-        console.log(`${type} 适配器恢复，自动连接设备 ${deviceId}`);
-        try {
-          const connectionType = await commManager.connect(deviceId);
-          console.log(`自动连接成功，通过 ${connectionType}`);
-          await commManager.sendMessage(deviceId, JSON.stringify({ type: 'get' }));
-        } catch (err) {
-          console.error('自动连接失败:', err);
-        }
+    CommunicationManager.begin({
+      onStateChange: async (state) => {
+        console.log(state);
       },
       onMessageReceived: (deviceId, message) => {
         this.handleReceivedMessage(deviceId, message);
       },
+      task: {
+        setup: () => CommunicationManager.connect(deviceId),
+        recover: () => CommunicationManager.connect(deviceId),
+        end: () => CommunicationManager.disconnect(deviceId),
+      }
     });
   },
 
@@ -147,7 +142,7 @@ Page({
   },
 
   onUnload() {
-    this.data.commManager.close();
+    CommunicationManager.finish();
   },
   
   dragStart(e) {
@@ -175,7 +170,7 @@ Page({
     if (button.name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
     else if (button.name == 'color') message = JSON.stringify({ color: this.data.color});
     try {
-      await commManager.sendMessage(deviceId, message);
+      await CommunicationManager.sendMessage(this.data.deviceId, message);
       console.log(`消息发送成功，内容: ${message}`);
     } catch (err) {
       console.error(`消息发送失败，内容: ${message}`, err);
@@ -208,30 +203,26 @@ Page({
       type: "light",
       success: async () => {
         if (this.data.buttons[index].name == 'config') {
-          await this.data.commManager.close();
           wx.navigateTo({
-            url: `/pages/setup/setup?name=${this.data.name}&deviceId=${this.data.deviceId}`,
-            routeType: 'wx://modal-navigation',
+            url: `/pages/setup/setup?deviceId=${this.data.deviceId}`,
           });
         }
-        
-        const deviceId = this.data.deviceId;
-        const commManager = this.data.commManager;
+        else {
+          const deviceId = this.data.deviceId;
         const message = this.data.buttons[index].bindTap(this);
         try {
-          await commManager.sendMessage(deviceId, message);
+          await CommunicationManager.sendMessage(deviceId, message);
           console.log(`消息发送成功，内容: ${message}`);
         } catch (err) {
           console.error(`消息发送失败，内容: ${message}`, err);
+        }
         }
       },
     });
   },
 
   backToHome() {
-    wx.redirectTo({
-      url: '/pages/home/home',
-    });
+    wx.navigateBack();
   },
 
   handleReceivedMessage(deviceId, message) {
