@@ -8,22 +8,24 @@ Page({
     selectedDevice: null,
     newName: '',
     devicesBuffer: [],
+    task: null,
   },
 
   async onLoad() {
-    BluetoothManager.begin({
-      onStateChange: this.updateState.bind(this),
-      onDeviceChange: this.updateDevices.bind(this),
-      task: {
-        setup: () => BluetoothManager.startDiscovery(),
-        recover: () => BluetoothManager.startDiscovery(),
-        end: () => BluetoothManager.stopDiscovery(),
-      }
-    })
+    this.data.task = {
+      callbacks: {
+        onStateChange: this.updateState.bind(this),
+        onDeviceChange: this.updateDevices.bind(this),
+      },
+      setup: () => BluetoothManager.startDiscovery(),
+      recover: () => BluetoothManager.startDiscovery(),
+      end: () => BluetoothManager.stopDiscovery(),
+    };
+    BluetoothManager.begin(this.data.task);
   },
 
   onUnload() {
-    BluetoothManager.finish();
+    BluetoothManager.finish(this.data.task);
   },
 
   /**返回制造商选择 */ 

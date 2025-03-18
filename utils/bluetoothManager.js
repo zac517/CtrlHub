@@ -6,20 +6,17 @@ class BluetoothManager {
 
     if (this._checkLevels(0)) {
       this.config = {
-        testMode: true,
+        testMode: false,
         scanInterval: 2000,
         /**信号阈值 */
         rssiThreshold: -80,
       };
       this.config = { ...this.config, ...config };
       if (this.config.testMode) console.log('蓝牙模块初始化');
-  
-      this.stateListeners = new Set();
-      this.deviceListeners = new Set();
-      this.connectionListeners = new Set();
-      this.messageListeners = new Set();
 
-      this.task = null;
+      /**任务列表 */
+      this.tasks = new Set();
+
       this.state = { available: false, discovering: false };
       this.devices = new Map();
       this.connectedDevices = new Map();
@@ -34,6 +31,10 @@ class BluetoothManager {
     try {
       await wx.openBluetoothAdapter();
       this.state = { available: true, discovering: false };
+      this.tasks.forEach(task => {
+        if (task.callbacks.onStateChange) task.callbacks.onStateChange(this.state);
+      })
+      if (this.config.testMode) console.log('开启蓝牙适配器成功');
     } catch (err) {
       console.log('开启蓝牙适配器失败: ' + err);
     }
@@ -42,10 +43,14 @@ class BluetoothManager {
       if (this.config.testMode) console.log('蓝牙适配器状态变化为: ' + JSON.stringify(res));
       const lastState = this.state;
       this.state = res;
-      this.stateListeners.forEach(cb => cb(res));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onStateChange) task.callbacks.onStateChange(res);
+      })
       if (!lastState.available && res.available) {
         if (this.config.testMode) console.log('蓝牙适配器恢复');
-        if (this.task?.recover) this.task.recover();
+        this.tasks.forEach(task => {
+          if (task.recover) task.recover();
+        })
       }
     });
 
@@ -56,19 +61,25 @@ class BluetoothManager {
           this.devices.set(device.deviceId, device);
         }
       });
-      this.deviceListeners.forEach(cb => cb(Array.from(this.devices.values())));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onDeviceChange) task.callbacks.onDeviceChange(Array.from(this.devices.values()));
+      })
       this.devices.clear();
     });
 
     wx.onBLEConnectionStateChange(res => {
       if (this.config.testMode) console.log('蓝牙设备连接状态变化');
       if (!res.connected) this.connectedDevices.delete(res.deviceId);
-      this.connectionListeners.forEach(cb => cb(res));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onConnectionChange) task.callbacks.onConnectionChange(res);
+      })
     });
 
     wx.onBLECharacteristicValueChange(res => {
       if (this.config.testMode) console.log('蓝牙收到消息');
-      this.messageListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onMessageReceived) task.callbacks.onMessageReceived(res.deviceId, this.bufferToString(res.value));
+      })
     });
   }
 
@@ -116,26 +127,18 @@ class BluetoothManager {
   }
 
   /**初始化并开始任务函数 */
-  begin(options) {
+  begin(task) {
     if (this._checkLevels(0)) {
-      this.task = options.task;
-      this._registerCallbacks(options.onStateChange, this.stateListeners);
-      this._registerCallbacks(options.onDeviceChange, this.deviceListeners);
-      this._registerCallbacks(options.onConnectionChange, this.connectionListeners);
-      this._registerCallbacks(options.onMessageReceived, this.messageListeners);
-      if (this.task?.setup) this.task.setup();
+      this.tasks.add(task);
+      if (task.setup) task.setup();
     }
   }
 
   /**结束任务函数 */
-  finish() {
+  finish(task) {
     if (this._checkLevels(0)) {
-      if (this.task?.end) this.task.end();
-      this.task = null;
-      this.stateListeners.clear();
-      this.deviceListeners.clear();
-      this.connectionListeners.clear();
-      this.messageListeners.clear();
+      if (task.end) task.end();
+      this.tasks.delete(task);
     }
   }
 
@@ -164,17 +167,6 @@ class BluetoothManager {
       } catch (err) {
         console.error('蓝牙关闭扫描失败:', err);
       }
-    }
-  }
-
-  /**注册回调，支持列表或单个函数 */
-  _registerCallbacks(callbacks, listenerSet) {
-    if (Array.isArray(callbacks)) {
-      callbacks.forEach(cb => {
-        if (typeof cb === 'function') listenerSet.add(cb);
-      });
-    } else if (typeof callbacks === 'function') {
-      listenerSet.add(callbacks);
     }
   }
 
