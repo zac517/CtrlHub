@@ -1,5 +1,3 @@
-import CommunicationManager from '../../utils/communicationManager';
-
 Page({
   data: {
     devices: [],
@@ -28,35 +26,6 @@ Page({
 
   onUnload() {
     wx.setStorageSync('devices', this.data.devices);
-  },
-
-  onPullDownRefresh() {
-    wx.vibrateShort({
-      type: "light",
-      success: () => {
-        this.refresh();
-      },
-    });
-  },
-
-  /**
-   * 刷新
-   */
-  async refresh() {
-    if (this.data.isOnDiscovery) {
-      await wx.stopPullDownRefresh();
-      return;
-    }
-    this.data.isOnDiscovery = true;
-    const deviceIds = this.data.devices.map(device => device.deviceId);
-    const statusMap = await CommunicationManager.checkMultipleOnlineStatus(deviceIds);
-    let newDevices = [...this.data.devices];
-    newDevices.forEach(device => device.isOnline = statusMap.get(device.deviceId));
-    this.setData({
-      devices: newDevices,
-    });
-    this.data.isOnDiscovery = false;
-    await wx.stopPullDownRefresh();
   },
 
   /**
@@ -168,7 +137,7 @@ Page({
    */
   cardLongpress(e) {
     wx.vibrateShort({
-      type: "light",
+      type: "heavy",
       success: () => {
         if (!this.data.isOnSelect) {
           this.startSelect();

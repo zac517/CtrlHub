@@ -89,6 +89,7 @@ class MqttManager {
   begin(options) {
     if (this.connected) {
       this.task = options.task;
+      console.log(options.onMessageReceived);
       this._registerCallbacks(options.onStateChange, this.stateListeners);
       this._registerCallbacks(options.onMessageReceived, this.messageListeners);
       if (this.task?.setup) this.task.setup();
@@ -112,7 +113,6 @@ class MqttManager {
   subscribe(deviceId) {
     if (this.connected) {
       const topic = `${this.topicPrefix}/devices/${deviceId.toLowerCase()}/state`;
-      console.log('监听' + topic);
       this.client.subscribe(topic, { qos: 2 });
     }
     else {

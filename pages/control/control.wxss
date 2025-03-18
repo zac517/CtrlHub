@@ -57,12 +57,17 @@
   flex-grow: 1;
   line-height: min(100px, 15vh);
   text-align: center;
-  flex-basis: 20vw;
+  flex-basis: 24vw;
+  box-sizing: border-box;
+}
+
+.panel .inactive {
+  border: none;
 }
 
 .panel-button.long-button {
   flex-grow: 3;
-  flex-basis: 60vw;
+  flex-basis: 72vw;
   position: relative;
 }
 
@@ -81,33 +86,12 @@
 }
 
 .bright-wrapper {
-  background: repeating-linear-gradient(
-        -45deg,
-        white,
-        white 7px,
-        rgba(0, 0, 0, 0.1) 7px,
-        rgba(0, 0, 0, 0.1) 8px
-  );
+  background-color: transparent;
 }
 
 .color-wrapper {
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      white,
-      white 8px,
-      transparent 8px,
-      transparent 10px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      white,
-      white 8px,
-      transparent 8px,
-      transparent 10px
-    ),
-    linear-gradient(to right, #ffffff, #ffddbb);
-  }
+  background-color: white;
+}
 
 .bright-child {
   height: 100%;
