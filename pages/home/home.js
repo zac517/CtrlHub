@@ -1,3 +1,4 @@
+import CommunicationManager from '../../utils/communicationManager'
 Page({
   data: {
     devices: [],
@@ -5,6 +6,15 @@ Page({
     isSelectedAll: false,
     selectedCount: 0,
     isOnDiscovery: false,
+
+    state: {
+      bluetooth: { available: false, discovering: false },
+      mqtt: false,
+    },
+
+    available: false,
+
+    task: null,
   },
 
   onLoad() {
@@ -12,6 +22,17 @@ Page({
       devices: wx.getStorageSync('devices') || [],
     });
     this.cancelSelectAll();
+    this.data.task = {
+      callbacks: {
+        onStateChange: state => {
+          this.setData({
+           state,
+           available: state.bluetooth.available || state.mqtt,
+          })
+        },
+      },
+    };
+    CommunicationManager.begin(this.data.task);
   },
 
   onHide() {
@@ -26,6 +47,7 @@ Page({
 
   onUnload() {
     wx.setStorageSync('devices', this.data.devices);
+    CommunicationManager.finish(this.data.task);
   },
 
   /**
@@ -154,23 +176,24 @@ Page({
     if (this.data.isOnSelect) {
       this.handleCheckboxChange(e);
     } else {
-      if (e.currentTarget.dataset.device.manufacturer == "Lumina") {
-        if (e.currentTarget.dataset.device.isOnline) {
+      if (!this.data.available) {
+        wx.showToast({
+          title: '请先开启 WiFi 或蓝牙',
+          icon: 'none'
+        });
+      }
+      else {
+        if (e.currentTarget.dataset.device.manufacturer == "Lumina") {
           wx.navigateTo({
             url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}`,
           });
         }
         else {
           wx.showToast({
-            title: '当前设备已离线',
-            icon: 'none',
+            title: '暂不支持控制此类设备',
+            icon: 'none'
           });
         }
-      } else {
-        wx.showToast({
-          title: '暂不支持控制此类设备',
-          icon: 'none',
-        });
       }
     }
   },

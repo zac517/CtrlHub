@@ -8,7 +8,7 @@ Page({
 
     isOpen: false,
 
-    brightness: 30,
+    brightness: 0,
 
     color: 0,
     coolColor: '#ffffff',
@@ -21,11 +21,8 @@ Page({
     isWiFiOpen: false,
     isWiFiConnected: false,
 
-    buttons: [
-      {
-        name: 'power',
-        type: 'tap',
-        label: '',
+    buttons: {
+      power : {
         isPressed: false,
         bindTap(that) {
           const newIsOpen =! that.data.isOpen;
@@ -35,10 +32,8 @@ Page({
           return JSON.stringify({ power: newIsOpen? 'on' : 'off' });
         },
       },
-      {
-        name: 'brightness',
-        type: 'drag',
-        label: '亮度',
+
+      brightness : {
         startX: 0,
         startValue: 0,
         left: 0,
@@ -49,10 +44,8 @@ Page({
           })
         },
       },
-      {
-        name: 'color',
-        type: 'drag',
-        label: '色温',
+
+      color : {
         startX: 0,
         startValue: 0,
         left: 0,
@@ -64,10 +57,8 @@ Page({
           })
         },
       },
-      {
-        name: 'mode',
-        type: 'tap',
-        label: '模式',
+
+      mode : {
         isPressed: false,
         bindTap(that) {
           let newMode = that.data.mode;
@@ -82,10 +73,8 @@ Page({
           return JSON.stringify({ mode: newMode });
         },
       },
-      {
-        name: 'wifi',
-        type: 'tap',
-        label: 'WiFi',
+
+      wifi : {
         isPressed: false,
         bindTap(that) {
           const newIsWiFiOpen = !that.data.isWiFiOpen;
@@ -95,15 +84,17 @@ Page({
           return JSON.stringify({ wifi: newIsWiFiOpen? 'on' : 'off' });
         },
       },
-      {
-        name: 'config',
-        type: 'tap',
-        label: '配网',
+
+      config : {
         isPressed: false,
       },
-    ],
+    },
     
     dragWidth: 0,
+
+    vibrateShort: false,
+
+    task: null,
   },
 
   async onLoad(options) {
@@ -113,109 +104,136 @@ Page({
     });
     let deviceId = this.data.deviceId;
 
-    CommunicationManager.begin({
-      onStateChange: async (state) => {
-        console.log(state);
+    this.data.task = {
+      callbacks: {
+        onStateChange: state => {
+          if (!(state.bluetooth.available || state.mqtt)) {
+            wx.showModal({
+              title: 'WiFi 和蓝牙均不可用',
+              showCancel: false,
+              success: (res) => {
+                wx.navigateBack({
+                  delta: 2,
+                })
+              }
+            });
+          }
+        },
+        onMessageReceived: (deviceId, message) => {
+          this.handleReceivedMessage(deviceId, message);
+        },
       },
-      onMessageReceived: (deviceId, message) => {
-        this.handleReceivedMessage(deviceId, message);
+      setup: async () => {
+        await CommunicationManager.connect(deviceId);
+        await CommunicationManager.sendMessage(this.data.deviceId, JSON.stringify({type: 'get'}));
       },
-      task: {
-        setup: () => CommunicationManager.connect(deviceId),
-        recover: () => CommunicationManager.connect(deviceId),
-        end: () => CommunicationManager.disconnect(deviceId),
-      }
-    });
+      recover: async () => {
+        await CommunicationManager.connect(deviceId);
+        await CommunicationManager.sendMessage(this.data.deviceId, JSON.stringify({type: 'get'}));
+      },
+      end: () => CommunicationManager.disconnect(deviceId),
+    }
+
+    CommunicationManager.begin(this.data.task);
   },
 
   onReady() {
     const query = wx.createSelectorQuery();
     query.select('.long-button').boundingClientRect((rect) => {
       if (rect) {
-        console.log(rect.left);
         this.setData({
           dragWidth: rect.width,
         });
-        this.data.buttons[1].left = rect.left;
+        this.data.buttons.brightness.left = rect.left;
       }
     }).exec();
   },
 
   onUnload() {
-    CommunicationManager.finish();
+    CommunicationManager.finish(this.data.task);
   },
   
   dragStart(e) {
-    const index = e.currentTarget.dataset.index;
-    const button = this.data.buttons[index];
+    const name = e.currentTarget.dataset.name;
+    const button = this.data.buttons[name];
     button.startX = e.changedTouches[0].clientX;
     button.startValue = button.getValue(this);
   },
 
   dragTouch(e) {
-    const index = e.currentTarget.dataset.index;
-    const button = this.data.buttons[index];
+    const name = e.currentTarget.dataset.name;
+    const button = this.data.buttons[name];
     const value = Math.floor(Math.max(0, Math.min(button.startValue + (e.changedTouches[0].clientX - button.startX) / this.data.dragWidth * 100, 100)));
     button.setValue(this, value);
+    if (value === 0 || value === 100) {
+      if (!this.data.vibrateShort) {
+        wx.vibrateShort({
+          type: "heavy",
+          success: () => this.setData({vibrateShort: true}),
+        });
+      } 
+    }
+    else {
+      this.setData({vibrateShort: false});
+    }
   },
 
   async dragEnd(e) {
-    const index = e.currentTarget.dataset.index;
-    const button = this.data.buttons[index];
+    const name = e.currentTarget.dataset.name;
+    const button = this.data.buttons[name];
     if (e.changedTouches[0].clientX == button.startX) {
       const value = Math.floor((e.changedTouches[0].clientX - button.left) / this.data.dragWidth * 100);
       button.setValue(this, value);
     };
     let message = '';
-    if (button.name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
-    else if (button.name == 'color') message = JSON.stringify({ color: this.data.color});
+    if (name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
+    else if (name == 'color') message = JSON.stringify({ color: this.data.color});
     try {
       await CommunicationManager.sendMessage(this.data.deviceId, message);
-      console.log(`消息发送成功，内容: ${message}`);
     } catch (err) {
       console.error(`消息发送失败，内容: ${message}`, err);
     }
   },
 
   onTouchStart(e) {
-    let index = e.currentTarget.dataset.index;
-    let newButton = { ...this.data.buttons[index], isPressed: true };
-    let newButtons = [...this.data.buttons];
-    newButtons[index] = newButton;
+    let name = e.currentTarget.dataset.name;
+    let newButton = { ...(this.data.buttons[name]), isPressed: true };
+    let newButtons = {...this.data.buttons};
+    newButtons[name] = newButton;
     this.setData({
       buttons: newButtons,
     });
   },
 
   onTouchEnd(e) {
-    let index = e.currentTarget.dataset.index;
-    let newButton = { ...this.data.buttons[index], isPressed: false };
-    let newButtons = [...this.data.buttons];
-    newButtons[index] = newButton;
+    let name = e.currentTarget.dataset.name;
+    let newButton = { ...(this.data.buttons[name]), isPressed: false };
+    let newButtons = {...this.data.buttons};
+    newButtons[name] = newButton;
     this.setData({
       buttons: newButtons,
     });
   },
 
   onTap(e) {
-    let index = e.currentTarget.dataset.index;
+    let name = e.currentTarget.dataset.name;
     wx.vibrateShort({
       type: "medium",
       success: async () => {
-        if (this.data.buttons[index].name == 'config') {
+        if (name == 'config') {
           wx.navigateTo({
             url: `/pages/setup/setup?deviceId=${this.data.deviceId}`,
           });
         }
         else {
           const deviceId = this.data.deviceId;
-        const message = this.data.buttons[index].bindTap(this);
-        try {
-          await CommunicationManager.sendMessage(deviceId, message);
-          console.log(`消息发送成功，内容: ${message}`);
-        } catch (err) {
-          console.error(`消息发送失败，内容: ${message}`, err);
-        }
+          const message = this.data.buttons[name].bindTap(this);
+          try {
+            await CommunicationManager.sendMessage(deviceId, message);
+            
+          } catch (err) {
+            console.error(`消息发送失败，内容: ${message}`, err);
+          }
         }
       },
     });
@@ -226,7 +244,6 @@ Page({
   },
 
   handleReceivedMessage(deviceId, message) {
-    console.log(`收到消息 (${deviceId}):`, message);
     try {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage.power) {
@@ -246,7 +263,8 @@ Page({
       }
       if (parsedMessage.color!== undefined) {
         this.setData({
-          color: parsedMessage.color
+          color: parsedMessage.color,
+          realColor: mixColors(this.data.warmColor, this.data.coolColor, parsedMessage.color / 100),
         });
       }
       if (parsedMessage.wifi) {

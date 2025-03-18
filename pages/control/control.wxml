@@ -14,23 +14,59 @@
         </view>
     </view>
     <view class="panel">
-        <view wx:for="{{buttons}}" wx:key="index" class="panel-button {{item.type == 'drag' ? 'long-button' : ''}}">
-          <view wx:if="{{item.type == 'tap'}}" 
-          class="tap-wrapper {{item.isPressed ? 'pressed' : ''}} {{isOpen || item.name == 'power' ? '' : 'inactive'}}" 
-          bindtouchstart="{{isOpen || item.name == 'power' ? 'onTouchStart' : ''}}"
-          bindtouchend="{{isOpen || item.name == 'power' ? 'onTouchEnd' : ''}}"
-          bindtap="{{isOpen || item.name == 'power' ? 'onTap' : ''}}"
-          data-index="{{index}}">
-            <icon wx:if="{{item.name == 'power'}}" class="iconfont icon-power"/>
-            {{item.label}}
-          </view>
+      <view 
+      class="panel-button tap-wrapper {{buttons.power.isPressed ? 'pressed' : ''}}" 
+      bindtouchstart="onTouchStart"
+      bindtouchend="onTouchEnd"
+      bindtap="onTap"
+      data-name="power">
+        <icon class="iconfont icon-power" style="{{isOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"/>
+      </view>
 
-          <view wx:if="{{item.type == 'drag'}}" 
-          class="drag-wrapper {{item.name == 'brightness' ? 'bright-wrapper' : ''}} {{item.name == 'color' ? 'color-wrapper' : ''}} {{isOpen || item.name == 'power' ? '' : 'inactive'}}" 
-          bindtouchmove="dragTouch" bindtouchstart="dragStart" 
-          bindtouchend="dragEnd" data-index="{{index}}">
-              <view wx:if="{{item.name == 'brightness'}}" class="bright-child {{isOpen || item.name == 'power' ? '' : 'inactive'}}" style="width: {{brightness + '%'}}"></view>
-          </view>
-        </view>
+      <view 
+      class="panel-button long-button bright-wrapper" 
+      bindtouchmove="{{isOpen ? 'dragTouch' : ''}}" 
+      bindtouchstart="{{isOpen ? 'dragStart' : ''}}" 
+      bindtouchend="{{isOpen ? 'dragEnd' : ''}}" 
+      data-name="brightness">
+          <view class="bright-child {{isOpen ? '' : 'inactive'}}" style="width: {{brightness + '%'}}"></view>
+      </view>
+
+      <view 
+      class="panel-button long-button color-wrapper {{isOpen ? '' : 'inactive'}}" 
+      bindtouchmove="{{isOpen ? 'dragTouch' : ''}}" 
+      bindtouchstart="{{isOpen ? 'dragStart' : ''}}" 
+      bindtouchend="{{isOpen ? 'dragEnd' : ''}}" 
+      data-name="color">
+      </view>
+
+      <view 
+      class="panel-button tap-wrapper {{buttons.mode.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
+      bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
+      bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
+      bindtap="{{isOpen ? 'onTap' : ''}}"
+      data-name="mode">
+        模式
+      </view>
+
+      <view 
+      class="panel-button tap-wrapper {{buttons.wifi.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
+      style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"
+      bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
+      bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
+      bindtap="{{isOpen ? 'onTap' : ''}}"
+      data-name="wifi">
+        WiFi
+      </view>
+
+      <view  
+      class="panel-button tap-wrapper {{buttons.config.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
+      style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"
+      bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
+      bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
+      bindtap="{{isOpen ? 'onTap' : ''}}"
+      data-name="config">
+        配网
+      </view>
     </view>
 </view>

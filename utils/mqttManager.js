@@ -5,7 +5,7 @@ class MqttManager {
     /**配置 */
     this.config = {
       /**测试模式 */
-      testMode: true,
+      testMode: false,
       /**默认 WebSocket 地址 */
       uri: 'wss://broker-cn.emqx.io:8084/mqtt',
       /**客户端 ID */ 
@@ -24,8 +24,13 @@ class MqttManager {
         onSuccess: () => {
           this.connected = true;
           if (this.config.testMode) console.log('连接 MQTT 服务器成功');
-          this.stateListeners.forEach(cb => cb(true));
-          if (this.task?.recover) this.task.recover();
+          this.tasks.forEach(task => {
+            
+            if (task.callbacks.onStateChange) task.callbacks.onStateChange(true);
+          })
+          this.tasks.forEach(task => {
+            if (task.recover) task.recover();
+          })
         },
         onFailure: () => {
           console.log('连接 MQTT 服务器失败')
@@ -37,11 +42,8 @@ class MqttManager {
     this.config = { ...this.config, ...config };
     if (this.config.testMode) console.log('MQTT 模块初始化');
 
-    this.stateListeners = new Set();
-    this.messageListeners = new Set();
-
     /**任务 */
-    this.task = null;
+    this.tasks = new Set();
     /**mqtt 客户端 */
     this.client = null;
     /**服务器连接状态 */
@@ -73,7 +75,10 @@ class MqttManager {
     // 断连监听
     this.client.onConnectionLost = () => {
       this.connected = false;
-      this.stateListeners.forEach(cb => cb(false));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onStateChange) task.callbacks.onStateChange(false);
+      })
+      
     };
 
     // 消息监听
@@ -81,32 +86,22 @@ class MqttManager {
       const topic = msg.destinationName;
       const deviceId = topic.split('/').slice(-2)[0];
       if (this.config.testMode) console.log('收到消息: ', deviceId, msg.payloadString);
-      this.messageListeners.forEach(cb => cb(deviceId, msg.payloadString));
+      this.tasks.forEach(task => {
+        if (task.callbacks.onMessageReceived) task.callbacks.onMessageReceived(deviceId, msg.payloadString);
+      })
     };
   }
 
   /**初始化并开始任务函数 */
-  begin(options) {
-    if (this.connected) {
-      this.task = options.task;
-      console.log(options.onMessageReceived);
-      this._registerCallbacks(options.onStateChange, this.stateListeners);
-      this._registerCallbacks(options.onMessageReceived, this.messageListeners);
-      if (this.task?.setup) this.task.setup();
-    }
-    else {
-      console.log('MQTT未连接');
-    }
+  begin(task) {
+    this.tasks.add(task);
+    if (task.setup) task.setup();
   }
 
   /**结束任务函数 */
-  finish() {
-    if (this._checkLevels(0)) {
-      if (this.task?.end) this.task.end();
-      this.task = null;
-      this.stateListeners.clear();
-      this.messageListeners.clear();
-    }
+  finish(task) {
+    if (task.end) task.end();
+    this.tasks.delete(task);
   }
 
   /**订阅设备 */
@@ -155,17 +150,6 @@ class MqttManager {
     }
     else {
       console.log('MQTT未连接');
-    }
-  }
-
-  /**注册回调，支持列表或单个函数 */
-  _registerCallbacks(callbacks, listenerSet) {
-    if (Array.isArray(callbacks)) {
-      callbacks.forEach(cb => {
-        if (typeof cb === 'function') listenerSet.add(cb);
-      });
-    } else if (typeof callbacks === 'function') {
-      listenerSet.add(callbacks);
     }
   }
 }
