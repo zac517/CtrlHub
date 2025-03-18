@@ -6,7 +6,6 @@
 |name|string|设备名称|
 |deviceId|string|设备的 deviceId，Android 设备为 MAC 地址|
 |manufacturer|string|设备制造商标识|
-|isOnline|bool|设备在线标识|
 |isSelected|bool|设备被选中标识|
 
 ### 通信格式

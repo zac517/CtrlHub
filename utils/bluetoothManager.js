@@ -5,11 +5,8 @@ class BluetoothManager {
     this.platform = deviceInfo.platform;
 
     if (this._checkLevels(0)) {
-      /**配置 */
       this.config = {
-        /**测试模式 */
         testMode: true,
-        /**扫描间隔 */
         scanInterval: 2000,
         /**信号阈值 */
         rssiThreshold: -80,
@@ -22,25 +19,16 @@ class BluetoothManager {
       this.connectionListeners = new Set();
       this.messageListeners = new Set();
 
-      /**任务 */
       this.task = null;
-      /**蓝牙适配器状态 */
       this.state = { available: false, discovering: false };
-      /**已发现的设备 */
       this.devices = new Map();
-      /**快速扫描发现的设备 */
-      this.fastDevices = new Map();
-      /**已连接的设备 */
       this.connectedDevices = new Map();
 
       this.init();
     }
   }
 
-  /**初始化函数 
-   * 
-   * 由于添加监听器需要在尝试开启适配器后进行，而构造函数不支持`async`标识符，而设计
-  */
+  /**初始化函数 */
   async init() {
     if (this.config.testMode) console.log('尝试开启蓝牙适配器');
     try {
@@ -50,7 +38,6 @@ class BluetoothManager {
       console.log('开启蓝牙适配器失败: ' + err);
     }
 
-    /**添加适配器状态变化监听器 */
     wx.onBluetoothAdapterStateChange(res => {
       if (this.config.testMode) console.log('蓝牙适配器状态变化为: ' + JSON.stringify(res));
       const lastState = this.state;
@@ -62,27 +49,23 @@ class BluetoothManager {
       }
     });
 
-    /**添加设备发现监听器 */
     wx.onBluetoothDeviceFound(res => {
       if (this.config.testMode) console.log('蓝牙发现设备');
       res.devices.forEach(device => {
         if (device.name && device.RSSI > this.config.rssiThreshold) {
           this.devices.set(device.deviceId, device);
-          this.fastDevices.set(device.deviceId, device);
         }
       });
       this.deviceListeners.forEach(cb => cb(Array.from(this.devices.values())));
       this.devices.clear();
     });
 
-    /**添加设备连接监听器 */
     wx.onBLEConnectionStateChange(res => {
       if (this.config.testMode) console.log('蓝牙设备连接状态变化');
       if (!res.connected) this.connectedDevices.delete(res.deviceId);
       this.connectionListeners.forEach(cb => cb(res));
     });
 
-    /**添加消息监听器 */
     wx.onBLECharacteristicValueChange(res => {
       if (this.config.testMode) console.log('蓝牙收到消息');
       this.messageListeners.forEach(cb => cb(res.deviceId, this.bufferToString(res.value)));
@@ -97,13 +80,11 @@ class BluetoothManager {
     };
     if (level == 0) return true;
 
-
     if (!this.state.available) {
       console.log("蓝牙适配器未开启");
       return false;
     };
     if (level == 1) return true;
-
 
     if (deviceId == '') {
       console.log("蓝牙 _checkLevels 方法调用有误：未提供 deviceId")
@@ -114,7 +95,6 @@ class BluetoothManager {
     };
     if (level == 2) return true;
 
-
     const device = this.connectedDevices.get(deviceId);
     const serviceData = device.serviceData;
     if (!serviceData || serviceData.length === 0) {
@@ -122,7 +102,6 @@ class BluetoothManager {
       return false;
     };
     if (level == 3) return true;
-
 
     const service = serviceData[0];
     const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
@@ -132,7 +111,6 @@ class BluetoothManager {
       return false;
     };
     if (level == 4) return true;
-
 
     return false;
   }
@@ -162,37 +140,18 @@ class BluetoothManager {
   }
 
   /**开启扫描 */
-  async startDiscovery(fast = false) {
+  async startDiscovery() {
     if (this._checkLevels(1)) {
       if (this.config.testMode) console.log('蓝牙开启扫描');
       try {
         await wx.startBluetoothDevicesDiscovery({
           allowDuplicatesKey: true,
-          interval: fast ? 0 : this.config.scanInterval,
-          powerLevel: fast ? 'high' : 'medium',
+          interval: this.config.scanInterval,
+          powerLevel: 'medium',
         });
       } catch (err) {
         console.error('蓝牙开启扫描失败:', err);
       }
-    }
-  }
-
-  /**快速扫描 */
-  async fastDiscovery(duration = 1000) {
-    if (this._checkLevels(1)) {
-      if (this.config.testMode) console.log('蓝牙快速扫描');
-      this.fastDevices.clear();
-      try {
-        await this.startDiscovery('fast');
-        await new Promise(resolve => setTimeout(resolve, duration));
-        await this.stopDiscovery();
-      } catch (err) {
-        console.error('蓝牙快速扫描失败:', err);
-      }
-      return Array.from(this.fastDevices.values());
-    }
-    else {
-      return [];
     }
   }
 

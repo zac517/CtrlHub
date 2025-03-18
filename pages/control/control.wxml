@@ -26,10 +26,10 @@
           </view>
 
           <view wx:if="{{item.type == 'drag'}}" 
-          class="drag-wrapper {{item.name == 'brightness' ? 'bright-wrapper' : ''}} {{item.name == 'color' ? 'color-wrapper' : ''}}" 
+          class="drag-wrapper {{item.name == 'brightness' ? 'bright-wrapper' : ''}} {{item.name == 'color' ? 'color-wrapper' : ''}} {{isOpen || item.name == 'power' ? '' : 'inactive'}}" 
           bindtouchmove="dragTouch" bindtouchstart="dragStart" 
           bindtouchend="dragEnd" data-index="{{index}}">
-              <view wx:if="{{item.name == 'brightness'}}" class="bright-child" style="width: {{brightness + '%'}}"></view>
+              <view wx:if="{{item.name == 'brightness'}}" class="bright-child {{isOpen || item.name == 'power' ? '' : 'inactive'}}" style="width: {{brightness + '%'}}"></view>
           </view>
         </view>
     </view>

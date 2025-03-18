@@ -200,7 +200,7 @@ Page({
   onTap(e) {
     let index = e.currentTarget.dataset.index;
     wx.vibrateShort({
-      type: "light",
+      type: "medium",
       success: async () => {
         if (this.data.buttons[index].name == 'config') {
           wx.navigateTo({
@@ -234,12 +234,12 @@ Page({
           isOpen: parsedMessage.power === 'on'
         });
       }
-      if (parsedMessage.mode!== undefined) {
+      if (parsedMessage.mode !== undefined) {
         this.setData({
           mode: parsedMessage.mode
         });
       }
-      if (parsedMessage.bn!== undefined) {
+      if (parsedMessage.bn !== undefined) {
         this.setData({
           brightness: parsedMessage.bn
         });
@@ -251,7 +251,7 @@ Page({
       }
       if (parsedMessage.wifi) {
         this.setData({
-          isWiFiOpen: parsedMessage.wifi!== 'off',
+          isWiFiOpen: parsedMessage.wifi !== 'off',
           isWiFiConnected: parsedMessage.wifi === 'true'
         });
       }
