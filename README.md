@@ -20,9 +20,9 @@
 
 |属性|类型|解释|
 |-|-|-|
-|id|string|设备在列表中的唯一 ID（重复添加同一设备时会重复）|
+|id|string|设备在列表中的唯一 ID|
 |name|string|设备名称|
-|deviceId|string|设备的 deviceId，Android 设备为 MAC 地址|
+|deviceId|string|设备的 deviceId，Android 平台为被控设备的蓝牙 MAC 地址|
 |manufacturer|string|设备制造商标识|
 |isSelected|bool|设备被选中标识|
 
