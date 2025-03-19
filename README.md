@@ -2,17 +2,12 @@
 
 微信小程序通过蓝牙和 mqtt 与物联网设备进行通信，并支持配网操作。
 
-## 简单使用
+[查看硬件代码](https://github.com/zac517/CtrlNode)
 
-#### 软件部分
+## 简单使用
 
 1. 微信公众平台 -> 管理 -> 开发管理 -> 开发设置 -> 服务器域名 -> socket合法域名：将 mqtt 服务器地址加入。
 
-#### 硬件部分
-1. 库管理：搜索安装 `PubSubClient` 和 `ArduinoJson` 。
-2. 开发板管理器：搜索安装 `esp32` 。
-3. 选择开发板 `ESP32 Dev Module` 。
-4. 工具 -> Partition Scheme：设置为 `Huge APP` 。
 
 ## 等待修复的问题
 
