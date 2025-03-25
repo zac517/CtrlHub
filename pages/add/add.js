@@ -6,8 +6,8 @@ Page({
     bluetoothAvailable: false,
     devices: [],
     selectedDevice: null,
-    newName: '',
-    devicesBuffer: [],
+    enteredName: '',
+    tempDevices: [],
     task: null,
   },
 
@@ -28,32 +28,32 @@ Page({
     BluetoothManager.finish(this.data.task);
   },
 
-  /**返回制造商选择 */ 
+  /** 返回制造商选择 */ 
   backToManu() {
     wx.navigateBack();
   },
 
-  /**更新设备列表 */ 
+  /** 更新设备列表 */ 
   updateDevices(devices) {
     this.setData({ devices });
   },
 
-  /**更新蓝牙适配器状态 */ 
+  /** 更新蓝牙适配器状态 */ 
   updateState(state) {
     this.setData({ bluetoothAvailable: state.available });
   },
 
-  /**选择设备 */ 
+  /** 选择设备 */ 
   onSelectDevice(e) {
-    const device = this.data.devicesBuffer[e.detail.value];
+    const device = this.data.tempDevices[e.detail.value];
     if (!device) return;
     this.setData({ selectedDevice: device });
   },
 
-  /**点击选择器 */ 
+  /** 点击选择器 */ 
   onPickerTap() {
     if (this.data.bluetoothAvailable) {
-      this.data.devicesBuffer = [...this.data.devices];
+      this.data.tempDevices = [...this.data.devices];
     } else {
       wx.showToast({
         title: '当前蓝牙不可用',
@@ -62,12 +62,12 @@ Page({
     }
   },
 
-  /**添加设备 */ 
+  /** 添加设备 */ 
   async addDevices() {
-    let savedDevices = wx.getStorageSync('devices') || []; // 确保初始值是一个数组
+    let savedDevices = wx.getStorageSync('devices') || [];
     const newDevice = {
       id: await generateRandomValues(),
-      name: this.data.newName || this.data.selectedDevice.name,
+      name: this.data.enteredName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
       manufacturer: BluetoothManager.bufferToString(this.data.selectedDevice.advertisData),
       isOnline: true,

@@ -4,10 +4,10 @@
     <view class="back-button icon-button" bind:tap="backToControl"><icon class="iconfont icon-back"/></view>
   </view>
   <view class="content">
-    <text class="add-title">选择网络</text>
-    <input placeholder="输入WiFi名称" model:value="{{ssid}}" class="device-input"/>
-    <text class="add-title">密码</text>
-    <input placeholder="输入密码" model:value="{{password}}" class="device-input"/>
+    <text class="form-title">选择网络</text>
+    <input placeholder="输入WiFi名称" model:value="{{ssid}}" class="form-input"/>
+    <text class="form-title">密码</text>
+    <input placeholder="输入密码" model:value="{{password}}" class="form-input"/>
   </view>
   <view class="complete {{ssid && password ? '' : 'ban'}}" bind:tap="{{ssid && password ? 'setWiFi' : '' }}">完成</view>
 </view>

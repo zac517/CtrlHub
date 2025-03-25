@@ -1,19 +1,40 @@
-class BluetoothManager {
+class Task {
+  constructor(setup, recover, end, callbacks) {
+    this.callbacks = callbacks;
+    this.setup = setup;
+    this.recover = recover;
+    this.end = end;
+  }
+}
+
+
+class TaskManager {
+  constructor() {
+    this.tasks = new Set();
+  }
+
+  begin(task) {
+    this.tasks.add(task);
+    if (task.setup) task.setup();
+  }
+
+  finish(task) {
+    this.tasks.delete(task);
+    if (task.end) task.end();
+  }
+}
+
+class BLE {
   constructor() {
     this.platform = wx.getDeviceInfo().platform;
-
-    this.tasks = new Set();
-
     this.state = { available: false, discovering: false };
     this.devices = new Map();
     this.connectedDevices = new Map();
     this.config = {
       testMode: false,
       scanInterval: 2000,
-      /**信号阈值 */
       rssiThreshold: -80,
     };
-    this.init();
   }
 
   /**初始化函数 */
@@ -72,49 +93,6 @@ class BluetoothManager {
         if (task.callbacks.onMessageReceived) task.callbacks.onMessageReceived(res.deviceId, this.bufferToString(res.value));
       })
     });
-  }
-
-  /**检查条件 */
-  _checkLevels(level, deviceId = '') {
-    if (this.platform == 'devtools') {
-      console.log("当前平台为 devtools，不支持蓝牙相关功能");
-      return false;
-    };
-    if (level == 0) return true;
-
-    if (!this.state.available) {
-      console.log("蓝牙适配器未开启");
-      return false;
-    };
-    if (level == 1) return true;
-
-    if (deviceId == '') {
-      console.log("蓝牙 _checkLevels 方法调用有误：未提供 deviceId")
-    }
-    if (!this.connectedDevices.has(deviceId)) {
-      console.log(`蓝牙未连接到设备 ${deviceId}`);
-      return false;
-    };
-    if (level == 2) return true;
-
-    const device = this.connectedDevices.get(deviceId);
-    const serviceData = device.serviceData;
-    if (!serviceData || serviceData.length === 0) {
-      console.log(`设备 ${deviceId} 的服务 id 未找到`);
-      return false;
-    };
-    if (level == 3) return true;
-
-    const service = serviceData[0];
-    const writableChar = service.characteristics.find(char => char.properties.write || char.properties.writeNoResponse);
-    const notifyChar = service.characteristics.find(char => char.properties.notify || char.properties.indicate);
-    if (!writableChar || !notifyChar) {
-      console.log(`设备 ${deviceId} 未找到可用特征值`);
-      return false;
-    };
-    if (level == 4) return true;
-
-    return false;
   }
 
   /**初始化并开始任务函数 */

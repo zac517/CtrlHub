@@ -5,18 +5,18 @@
   </view>
   <view class="content">
     <view>
-      <text class="add-title">选择设备</text>
-      <picker class="device-input {{!bluetoothAvailable ? 'ban' : ''}}" 
+      <view class="form-title">选择设备</view>
+      <picker class="form-input {{!bluetoothAvailable ? 'ban' : ''}}" 
       bindchange="onSelectDevice" bind:tap="onPickerTap" disabled="{{!bluetoothAvailable}}" range="{{devices}}" range-key="name">
         <view>{{selectedDevice ? selectedDevice.name : '请选择'}}</view>
       </picker>
     </view>
     <view wx:if="{{selectedDevice}}">
-      <text class="add-title">设备名称</text>
-      <input placeholder="{{selectedDevice.name}}" model:value="{{newName}}" class="device-input"/>
+      <view class="form-title">设备名称</view>
+      <input placeholder="{{selectedDevice.name}}" model:value="{{enteredName}}" class="form-input"/>
     </view>
-    <text class="add-hint">*请开启手机蓝牙并保持在设备附近</text>
-    <text class="add-hint">*若未找到设备请再次选择</text>
+    <view class="hint">*请开启手机蓝牙并保持在设备附近</view>
+    <view class="hint">*若未找到设备请再次选择</view>
+    <view class="complete {{!selectedDevice ? 'ban' : ''}}" bind:tap="{{selectedDevice ? 'addDevices' : '' }}">完成</view>
   </view>
-  <view class="complete {{!selectedDevice ? 'ban' : ''}}" bind:tap="{{selectedDevice ? 'addDevices' : '' }}">完成</view>
 </view>
