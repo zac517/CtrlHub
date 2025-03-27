@@ -1,12 +1,7 @@
-.content {
-  width: 100%;
-  height: calc(100vh - min(100px, 15vh) * 3 - var(--top-margin) - 65px);
-}
-
 .lamp {
-  height: calc(100vh - min(100px, 15vh) * 3 - var(--top-margin) - 125px);
+  height: calc(100% - min(100px, 15vh) * 3 - 60px);
   width: 100%;
-  line-height: calc(100vh - min(100px, 15vh) * 3 - var(--top-margin) - 125px);
+  line-height: calc(100vh - min(100px, 15vh) * 3 - 210px);
   text-align: center;
 }
 
@@ -44,7 +39,7 @@
 .panel {
     display: flex;
     width: calc(100% + 40px);
-    position: relative;
+    position: absolute;
     bottom: 0;
     left: -20px;
     flex-wrap: wrap;

@@ -1,11 +1,10 @@
-import CommunicationManager from '../../utils/communicationManager'
+import { Comm } from '../../utils/comm.js'
 Page({
   data: {
     devices: [],
     isOnSelect: false,
     isSelectedAll: false,
     selectedCount: 0,
-    isOnDiscovery: false,
 
     state: {
       bluetooth: { available: false, discovering: false },
@@ -14,7 +13,7 @@ Page({
 
     available: false,
 
-    task: null,
+    listener: null,
   },
 
   onLoad() {
@@ -22,17 +21,15 @@ Page({
       devices: wx.getStorageSync('devices') || [],
     });
     this.cancelSelectAll();
-    this.data.task = {
-      callbacks: {
-        onStateChange: state => {
-          this.setData({
-           state,
-           available: state.bluetooth.available || state.mqtt,
-          })
-        },
+    this.listener = {
+      onStateChange: state => {
+        this.setData({ 
+          state,
+          available: state.bluetooth.available || state.mqtt,
+         })
       },
     };
-    CommunicationManager.begin(this.data.task);
+    Comm.listeners.add(this.listener);
   },
 
   onHide() {
@@ -47,21 +44,15 @@ Page({
 
   onUnload() {
     wx.setStorageSync('devices', this.data.devices);
-    CommunicationManager.finish(this.data.task);
+    Comm.listeners.delete(this.listener);
   },
 
-  /**
-   * 开始选择函数
-   */
   startSelect(e) {
     this.setData({
       isOnSelect: true,
     });
   },
 
-  /**
-   * 全选函数
-   */
   selectAll() {
     const devices = this.data.devices.map(device => ({
       ...device,
@@ -75,9 +66,6 @@ Page({
     });
   },
 
-  /**
-   * 取消全选函数
-   */
   cancelSelectAll() {
     if (this.data.devices) {
       const devices = this.data.devices.map(device => ({
@@ -92,9 +80,6 @@ Page({
     }
   },
 
-  /**
-   * 取消选择函数
-   */
   cancelSelect() {
     this.cancelSelectAll();
     this.setData({
@@ -102,9 +87,6 @@ Page({
     });
   },
 
-  /**
-   * 删除选中设备的函数
-   */
   deleteSelected() {
     if (this.data.selectedCount > 0) {
       wx.showModal({
@@ -126,9 +108,6 @@ Page({
     }
   },
 
-  /**
-   * 处理选中事件函数
-   */
   handleCheckboxChange(e) {
     const selectedDevice = e.currentTarget.dataset.device;
     const devices = this.data.devices;
@@ -154,9 +133,6 @@ Page({
     });
   },
 
-  /**
-   * 卡片长按事件函数
-   */
   cardLongpress(e) {
     wx.vibrateShort({
       type: "heavy",
@@ -169,16 +145,13 @@ Page({
     });
   },
 
-  /**
-   * 卡牌点击事件函数
-   */
   cardTap(e) {
     if (this.data.isOnSelect) {
       this.handleCheckboxChange(e);
     } else {
       if (!this.data.available) {
         wx.showToast({
-          title: '请先开启 WiFi 或蓝牙',
+          title: '请先开启蓝牙或连接网络',
           icon: 'none'
         });
       }
@@ -198,9 +171,6 @@ Page({
     }
   },
 
-  /**
-   * 重命名函数
-   */
   renameDevice() {
     const selectedDevice = this.data.devices.find(device => device.isSelected);
     if (selectedDevice) {
@@ -232,9 +202,6 @@ Page({
     }
   },
 
-  /**
-   * 跳转到设备选择函数
-   */
   selectManufacturer() {
     wx.navigateTo({
       url: `/pages/manufacturer/manufacturer?devices=${this.data.devices}`,

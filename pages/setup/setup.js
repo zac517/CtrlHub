@@ -1,12 +1,11 @@
-import CommunicationManager from '../../utils/communicationManager';
+import { Comm } from '../../utils/comm.js';
 
 Page({
     data: {
       deviceId: '',
       ssid: '',
       password: '',
-
-      task: null,
+      listener: null,
       timeout: 0,
     },
 
@@ -14,19 +13,16 @@ Page({
       this.setData({
           deviceId: options.deviceId,
       });
-      this.data.task = {
-        callbacks: {
-          onMessageReceived: (deviceId, message) => {
-            this.handleReceivedMessage(deviceId, message);
-          },
+      this.listener = {
+        onMessageReceived: (deviceId, message) => {
+          this.handleReceivedMessage(deviceId, message);
         },
       }
-
-      CommunicationManager.begin(this.data.task);
+      Comm.listeners.add(this.listener);
     },
 
     onUnload() {
-      CommunicationManager.finish(this.data.task);
+      Comm.listeners.delete(this.listener);
     },
 
     /**返回控制界面 */
@@ -43,10 +39,9 @@ Page({
       });
     
       try {
-        await CommunicationManager.sendMessage(deviceId, JSON.stringify({ ssid }));
-        await CommunicationManager.sendMessage(deviceId, JSON.stringify({ pw: password }));
-        await CommunicationManager.sendMessage(deviceId, JSON.stringify({ type: "try" }));
-    
+        await Comm.sendMessage(deviceId, JSON.stringify({ ssid }));
+        await Comm.sendMessage(deviceId, JSON.stringify({ pw: password }));
+        await Comm.sendMessage(deviceId, JSON.stringify({ type: "try" }));
         this.data.timeout = setTimeout(() => {
           wx.hideLoading();
           wx.showToast({
@@ -64,33 +59,34 @@ Page({
       }
     },
 
-
     handleReceivedMessage(deviceId, message) {
-      try {
-        const parsedMessage = JSON.parse(message);
-        if (parsedMessage.wifi) {
-          if (parsedMessage.wifi == 'true') {
-            clearTimeout(this.data.timeout);
-            wx.hideLoading();
-            wx.showModal({
-              title: '配网完成',
-              showCancel: false,
-              success: (res) => {
-                wx.navigateBack();
-              }
-            });
+      if (deviceId == this.data.deviceId) {
+        try {
+          const parsedMessage = JSON.parse(message);
+          if (parsedMessage.wifi) {
+            if (parsedMessage.wifi == 'true') {
+              clearTimeout(this.data.timeout);
+              wx.hideLoading();
+              wx.showModal({
+                title: '配网完成',
+                showCancel: false,
+                success: () => {
+                  wx.navigateBack();
+                }
+              });
+            }
+            else if (parsedMessage.wifi == 'false') {
+              clearTimeout(this.data.timeout);
+              wx.hideLoading();
+              wx.showToast({
+                title: '配网失败',
+                icon: 'none'
+              });
+            }
           }
-          else if (parsedMessage.wifi == 'false') {
-            clearTimeout(this.data.timeout);
-            wx.hideLoading();
-            wx.showToast({
-              title: '配网失败',
-              icon: 'none'
-            });
-          }
+        } catch (err) {
+          console.error('解析消息失败:', err);
         }
-      } catch (err) {
-        console.error('解析消息失败:', err);
       }
     }
 });

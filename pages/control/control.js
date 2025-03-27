@@ -1,25 +1,23 @@
-import CommunicationManager from '../../utils/communicationManager'
+import { Comm } from '../../utils/comm.js'
 import { mixColors } from '../../utils/util'
 
 Page({
   data: {
     name: '',
     deviceId: '',
-
+    
     isOpen: false,
-
-    brightness: 0,
-
+    brightness: 100,
     color: 0,
     coolColor: '#ffffff',
     warmColor: '#ffddbb',
     realColor: '#ffffff',
-
     mode: 0,
     modeLabel: ['均衡', '夜间', '专注', '自动'],
-
     isWiFiOpen: false,
     isWiFiConnected: false,
+    dragWidth: 0,
+    vibrateShort: false,
 
     buttons: {
       power : {
@@ -89,12 +87,8 @@ Page({
         isPressed: false,
       },
     },
-    
-    dragWidth: 0,
 
-    vibrateShort: false,
-
-    task: null,
+    listener: null,
   },
 
   async onLoad(options) {
@@ -104,37 +98,57 @@ Page({
     });
     let deviceId = this.data.deviceId;
 
-    this.data.task = {
-      callbacks: {
-        onStateChange: state => {
-          if (!(state.bluetooth.available || state.mqtt)) {
-            wx.showModal({
-              title: 'WiFi 和蓝牙均不可用',
-              showCancel: false,
-              success: (res) => {
-                wx.navigateBack({
-                  delta: 2,
-                })
-              }
-            });
-          }
-        },
-        onMessageReceived: (deviceId, message) => {
-          this.handleReceivedMessage(deviceId, message);
-        },
+    this.listener = {
+      onStateChange: state => {
+        if (!(state.bluetooth.available || state.mqtt)) {
+          wx.showModal({
+            title: '蓝牙和网络均不可用',
+            showCancel: false,
+            success: (res) => {
+              wx.navigateBack({
+                delta: 2,
+              })
+            }
+          });
+        }
       },
-      setup: async () => {
-        await CommunicationManager.connect(deviceId);
-        await CommunicationManager.sendMessage(this.data.deviceId, JSON.stringify({type: 'get'}));
+      onMessageReceived: (deviceId, message) => {
+        this.handleReceivedMessage(deviceId, message);
       },
-      recover: async () => {
-        await CommunicationManager.connect(deviceId);
-        await CommunicationManager.sendMessage(this.data.deviceId, JSON.stringify({type: 'get'}));
-      },
-      end: () => CommunicationManager.disconnect(deviceId),
-    }
+    };
+    Comm.listeners.add(this.listener);
 
-    CommunicationManager.begin(this.data.task);
+    try {
+      Comm.wait({
+        deviceId,
+        time: 2000,
+        prepare: async () => {
+          await wx.showLoading({
+            title: '正在连接',
+            mask: true,
+          });
+          await Comm.connect(deviceId);
+          await Comm.sendMessage(deviceId, JSON.stringify({type: 'get'}));
+        },
+        success: () => {
+          wx.hideLoading();
+        },
+        fail: async () => {
+          wx.hideLoading();
+          wx.showModal({
+            title: '设备离线',
+            showCancel: false,
+          });
+          wx.navigateBack({
+            delta: 1,
+          });
+        }
+      })
+      
+    }
+    catch (err) {
+      throw err;
+    }
   },
 
   onReady() {
@@ -150,7 +164,7 @@ Page({
   },
 
   onUnload() {
-    CommunicationManager.finish(this.data.task);
+    Comm.listeners.delete(this.listener);
   },
   
   dragStart(e) {
@@ -188,11 +202,7 @@ Page({
     let message = '';
     if (name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
     else if (name == 'color') message = JSON.stringify({ color: this.data.color});
-    try {
-      await CommunicationManager.sendMessage(this.data.deviceId, message);
-    } catch (err) {
-      console.error(`消息发送失败，内容: ${message}`, err);
-    }
+    await Comm.sendMessage(this.data.deviceId, message);
   },
 
   onTouchStart(e) {
@@ -228,12 +238,7 @@ Page({
         else {
           const deviceId = this.data.deviceId;
           const message = this.data.buttons[name].bindTap(this);
-          try {
-            await CommunicationManager.sendMessage(deviceId, message);
-            
-          } catch (err) {
-            console.error(`消息发送失败，内容: ${message}`, err);
-          }
+          await Comm.sendMessage(deviceId, message);
         }
       },
     });
@@ -244,37 +249,39 @@ Page({
   },
 
   handleReceivedMessage(deviceId, message) {
-    try {
-      const parsedMessage = JSON.parse(message);
-      if (parsedMessage.power) {
-        this.setData({
-          isOpen: parsedMessage.power === 'on'
-        });
+    if (deviceId == this.data.deviceId) {
+      try {
+        const parsedMessage = JSON.parse(message);
+        if (parsedMessage.power) {
+          this.setData({
+            isOpen: parsedMessage.power === 'on'
+          });
+        }
+        if (parsedMessage.mode !== undefined) {
+          this.setData({
+            mode: parsedMessage.mode
+          });
+        }
+        if (parsedMessage.bn !== undefined) {
+          this.setData({
+            brightness: parsedMessage.bn
+          });
+        }
+        if (parsedMessage.color!== undefined) {
+          this.setData({
+            color: parsedMessage.color,
+            realColor: mixColors(this.data.warmColor, this.data.coolColor, parsedMessage.color / 100),
+          });
+        }
+        if (parsedMessage.wifi) {
+          this.setData({
+            isWiFiOpen: parsedMessage.wifi !== 'off',
+            isWiFiConnected: parsedMessage.wifi === 'true'
+          });
+        }
+      } catch (err) {
+        console.error('解析消息失败:', err);
       }
-      if (parsedMessage.mode !== undefined) {
-        this.setData({
-          mode: parsedMessage.mode
-        });
-      }
-      if (parsedMessage.bn !== undefined) {
-        this.setData({
-          brightness: parsedMessage.bn
-        });
-      }
-      if (parsedMessage.color!== undefined) {
-        this.setData({
-          color: parsedMessage.color,
-          realColor: mixColors(this.data.warmColor, this.data.coolColor, parsedMessage.color / 100),
-        });
-      }
-      if (parsedMessage.wifi) {
-        this.setData({
-          isWiFiOpen: parsedMessage.wifi !== 'off',
-          isWiFiConnected: parsedMessage.wifi === 'true'
-        });
-      }
-    } catch (err) {
-      console.error('解析消息失败:', err);
     }
   }
 });

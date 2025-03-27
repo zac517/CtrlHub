@@ -1,4 +1,4 @@
-import BluetoothManager from '../../utils/bluetoothManager.js';
+import { BLE } from '../../utils/comm.js';
 import { generateRandomValues } from '../../utils/util';
 
 Page({
@@ -6,41 +6,29 @@ Page({
     bluetoothAvailable: false,
     devices: [],
     selectedDevice: null,
-    enteredName: '',
     tempDevices: [],
-    task: null,
+    enteredName: '',
+    listener: null,
   },
 
   async onLoad() {
-    this.data.task = {
-      callbacks: {
-        onStateChange: this.updateState.bind(this),
-        onDeviceChange: this.updateDevices.bind(this),
-      },
-      setup: () => BluetoothManager.startDiscovery(),
-      recover: () => BluetoothManager.startDiscovery(),
-      end: () => BluetoothManager.stopDiscovery(),
+    this.data.listener = {
+        onDeviceChange: devices => this.setData({ devices }),
+        onStateChange: state => this.setData({ bluetoothAvailable: state.available }),
     };
-    BluetoothManager.begin(this.data.task);
+    BLE.listeners.add(this.data.listener);
+
+    await BLE.startDiscovery();
   },
 
-  onUnload() {
-    BluetoothManager.finish(this.data.task);
+  async onUnload() {
+    BLE.listeners.delete(this.data.listener);
+    await BLE.stopDiscovery();
   },
 
   /** 返回制造商选择 */ 
   backToManu() {
     wx.navigateBack();
-  },
-
-  /** 更新设备列表 */ 
-  updateDevices(devices) {
-    this.setData({ devices });
-  },
-
-  /** 更新蓝牙适配器状态 */ 
-  updateState(state) {
-    this.setData({ bluetoothAvailable: state.available });
   },
 
   /** 选择设备 */ 
@@ -69,7 +57,7 @@ Page({
       id: await generateRandomValues(),
       name: this.data.enteredName || this.data.selectedDevice.name,
       deviceId: this.data.selectedDevice.deviceId,
-      manufacturer: BluetoothManager.bufferToString(this.data.selectedDevice.advertisData),
+      manufacturer: BLE.bufferToString(this.data.selectedDevice.advertisData),
       isOnline: true,
       isSelected: false,
     };

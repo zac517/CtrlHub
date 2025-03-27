@@ -6,8 +6,8 @@
   --background-color: #f3f5f8;
   --card-inactive: #f7f8fa;
   --font-inactive: #acadaf;
-  --border-inactive: 1px solid #eeeff2;
-  --border: 1px solid #d3d5d8;
+  --border-inactive: 1px solid #eaebee;
+  --border: 1px solid #e0e0e0;
 
   padding: 20px;
   background-color: var(--background-color);
@@ -72,6 +72,7 @@
 }
 
 .list {
+  height: 100%;
   border-radius: 10px 10px 0 0;
   overflow: scroll;
   display: grid;
@@ -79,12 +80,15 @@
   column-gap: 10px;
   row-gap: 10px;
   grid-auto-rows: max(15vh, 120px);
+  padding-bottom: 20px !important;
+  box-sizing: border-box;
 }
 
-.content, .list {
-  height: calc(100% - 55px);
+.content {
+  height: calc(100% - 35px);
   margin-top: 15px;
   box-sizing: border-box;
+  position: relative;
 }
 
 .icon-button {
@@ -139,7 +143,7 @@
   line-height: 60px;
   text-align: center;
   position: absolute;
-  width: calc(100% - 40px);
+  width: 100%;
   bottom: 40px;
 }
 
@@ -148,7 +152,7 @@
 }
 
 .form-input {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: var(--border);
   height: 40px;
   line-height: 40px;
   padding: 0 15px;

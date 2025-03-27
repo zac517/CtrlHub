@@ -31,8 +31,8 @@
   font-size: 24px;
 }
 
-.is-on-select .list {
-  max-height: calc(100vh - 230px);
+.is-on-select .content {
+  max-height: calc(100% - 107px);
 }
 
 .footer-inactive {
@@ -130,7 +130,7 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   height: 72px;
   bottom: 0;
   left: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: var(--border);
 }
 
 .is-on-select .footer {

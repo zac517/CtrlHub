@@ -3,13 +3,15 @@
     <text class="title">选择设备品牌</text>
     <view class="back-button icon-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
   </view>
-  <view class="list">
-    <view class="card" bind:tap="goToAdd">
-      <text class="card-title">Lumina 系列</text>
-      <view class="logo">Lumina</view>
-    </view>
-    <view class="card inactive">
-      <text class="card-title">敬请期待</text>
+  <view class="content">
+    <view class="list">
+      <view class="card" bind:tap="goToAdd">
+        <text class="card-title">Lumina 系列</text>
+        <view class="logo">Lumina</view>
+      </view>
+      <view class="card inactive">
+        <text class="card-title">敬请期待</text>
+      </view>
     </view>
   </view>
 </view>
