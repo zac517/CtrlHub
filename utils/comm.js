@@ -216,7 +216,7 @@ class MQTTManager extends ListenerManager {
         timeout: 10,
         cleanSession: false,
         keepAliveInterval: 5,
-        reconnect: true,
+        reconnect: false,
         mqttVersion: 4,
         onSuccess: () => {
           this.connected = true;
@@ -399,7 +399,6 @@ class CommManager extends ListenerManager {
     const tempListener = {
       onMessageReceived: (id, message) => {
         if (id === deviceId) {
-          console.log(id, deviceId);
           Comm.listeners.delete(tempListener);
           clearTimeout(timeout);
           success(message);

@@ -33,7 +33,7 @@
 
     <view 
     class="panel-button long-button color-wrapper {{isOpen ? '' : 'inactive'}}" 
-    bindtouchmove="{{isOpen ? 'dragTouch' : ''}}" 
+
     bindtouchstart="{{isOpen ? 'dragStart' : ''}}" 
     bindtouchend="{{isOpen ? 'dragEnd' : ''}}" 
     data-name="color">

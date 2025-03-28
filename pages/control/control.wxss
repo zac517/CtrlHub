@@ -10,11 +10,11 @@
 }
 
 .iconfont.iconfont.icon-lamp-on {
-  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.1);
+  -webkit-text-stroke: 0.5px #e0e0e0;
 }
 
 .iconfont.icon-lamp-slash {
-  color: rgba(0, 0, 0, 0.05) !important;
+  color: #e7e9eb !important;
 }
 
 .imformation {
@@ -48,7 +48,7 @@
 
 .panel-button {
   height: min(100px, 15vh);
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border: 0.5px solid #e0e0e0;
   flex-grow: 1;
   line-height: min(100px, 15vh);
   text-align: center;
@@ -58,7 +58,7 @@
 }
 
 .panel .inactive {
-  border: none;
+  background-color: rgb(248, 248, 248);
 }
 
 .panel-button.long-button {
@@ -67,7 +67,7 @@
 }
 
 .pressed {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgb(248, 248, 248);
 }
 
 .bright-wrapper {
@@ -81,5 +81,5 @@
 .bright-child {
   height: 100%;
   background-color: white;
-  border-right: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-right: 0.5px solid #e0e0e0;
 }
