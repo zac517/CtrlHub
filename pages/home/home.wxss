@@ -36,11 +36,11 @@
 }
 
 .footer-inactive {
-  color: rgba(0, 0, 0, 0.3);
+  color: #b2b2b2;
 }
 
 .footer-inactive .icon-delete, .footer-inactive .icon-rename {
-  color: rgba(0, 0, 0, 0.3);
+  color: #b2b2b2;
 }
 
 .device-check {

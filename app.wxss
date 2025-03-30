@@ -66,8 +66,11 @@
 }
 
 .inactive {
-  background-color: var(--card-inactive);
   color: var(--font-inactive);
+}
+
+.card.inactive {
+  background-color: var(--card-inactive);
   border: var(--border-inactive);
 }
 

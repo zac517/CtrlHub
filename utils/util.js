@@ -10,7 +10,7 @@ function ab2hex(buffer){
 }
 
 /**获取指定长度的随机十六进制字符串*/
-export async function generateRandomValues(length = 6) {
+async function generateRandomValues(length = 6) {
   try {
       const randomValues = await new Promise((resolve, reject) => {
           wx.getRandomValues({

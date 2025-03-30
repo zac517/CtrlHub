@@ -1,5 +1,4 @@
-import { BLE } from '../../utils/comm.js';
-import { generateRandomValues } from '../../utils/util';
+import BLE from '../../utils/BLE.js';
 
 Page({
   data: {
@@ -13,11 +12,17 @@ Page({
 
   async onLoad() {
     this.data.listener = {
-        onDeviceChange: devices => this.setData({ devices }),
+        onDeviceChange: devices => {
+          if (devices.length > 0) wx.hideLoading();
+          this.setData({ devices })
+        },
         onStateChange: state => this.setData({ bluetoothAvailable: state.available }),
     };
     BLE.listeners.add(this.data.listener);
-
+    wx.showLoading({
+      title: '正在搜索',
+      mask: true,
+    })
     await BLE.startDiscovery();
   },
 
@@ -50,21 +55,65 @@ Page({
     }
   },
 
+  parseMacAddress(manufacturerData) {
+    if (manufacturerData?.length === 8) {
+        const macBytes = manufacturerData.slice(2);
+        const macAddressArray = [];
+        for (let i = 0; i < macBytes.length; i++) {
+            let byte = macBytes[i];
+            if (typeof byte!== 'number') byte = Number(byte);
+            const hex = byte.toString(16).padStart(2, '0');
+            macAddressArray.push(hex);
+        }
+        const macAddress = macAddressArray.join(':');
+        return macAddress;
+    }
+    return null;
+  },
+
   /** 添加设备 */ 
   async addDevices() {
-    let savedDevices = wx.getStorageSync('devices') || [];
+    const dataArray = new Uint8Array(this.data.selectedDevice.advertisData);
+    let manufacturer = '';
+    let mac = '';
+    if (dataArray[0] === 0xFF && dataArray[1] === 0xFE) {
+        manufacturer = "Lumina";
+        mac = this.parseMacAddress(dataArray);
+    } else {
+        manufacturer = "Unknown";
+        mac = this.data.selectedDevice.deviceId.toLowerCase();
+    }
+    console.log(mac);
     const newDevice = {
-      id: await generateRandomValues(),
-      name: this.data.enteredName || this.data.selectedDevice.name,
-      deviceId: this.data.selectedDevice.deviceId,
-      manufacturer: BLE.bufferToString(this.data.selectedDevice.advertisData),
-      isOnline: true,
-      isSelected: false,
+        deviceId: this.data.selectedDevice.deviceId,
+        mac,
+        name: this.data.enteredName || this.data.selectedDevice.name,
+        manufacturer,
+        isSelected: false,
     };
-    savedDevices = [newDevice, ...savedDevices];
+
+    let savedDevices = wx.getStorageSync('devices') || [];
+    let deviceIndex = -1;
+
+    // 查找是否存在相同 MAC 地址的设备
+    for (let i = 0; i < savedDevices.length; i++) {
+        if (savedDevices[i].mac === mac) {
+            deviceIndex = i;
+            break;
+        }
+    }
+
+    if (deviceIndex!== -1) {
+        // 如果存在相同 MAC 地址的设备，覆盖原信息
+        savedDevices[deviceIndex] = newDevice;
+    } else {
+        // 如果不存在，添加新设备
+        savedDevices = [newDevice, ...savedDevices];
+    }
+
     wx.setStorageSync('devices', savedDevices);
     wx.navigateBack({
-      delta: 2,
+        delta: 2,
     });
-  },
+  }
 });

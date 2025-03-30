@@ -1,10 +1,10 @@
-import { Comm } from '../../utils/comm.js'
+import Comm from '../../utils/comm.js'
 import { mixColors } from '../../utils/util'
 
 Page({
   data: {
     name: '',
-    deviceId: '',
+    id: null,
     
     isOpen: false,
     brightness: 100,
@@ -22,12 +22,13 @@ Page({
     buttons: {
       power : {
         isPressed: false,
-        bindTap(that) {
-          const newIsOpen =! that.data.isOpen;
-          that.setData({
+        bindTap() {
+          const newIsOpen =! this.data.isOpen;
+          this.setData({
             isOpen: newIsOpen,
           });
-          return JSON.stringify({ power: newIsOpen? 'on' : 'off' });
+          const message = JSON.stringify({ power: newIsOpen? 'on' : 'off' });
+          Comm.sendMessage(this.data.id, message);
         },
       },
 
@@ -35,9 +36,11 @@ Page({
         startX: 0,
         startValue: 0,
         left: 0,
-        getValue: (that) => that.data.brightness,
-        setValue: (that, brightness) => {
-          that.setData({
+        getValue() {
+          return this.data.brightness;
+        },
+        setValue(brightness) {
+          this.setData({
             brightness,
           })
         },
@@ -47,39 +50,43 @@ Page({
         startX: 0,
         startValue: 0,
         left: 0,
-        getValue: (that) => that.data.color,
-        setValue: (that, color) => {
-          that.setData({
+        getValue() {
+          return this.data.color;
+        },
+        setValue(color) {
+          this.setData({
             color,
-            realColor: mixColors(that.data.warmColor, that.data.coolColor, color / 100),
+            realColor: mixColors(this.data.warmColor, this.data.coolColor, color / 100),
           })
         },
       },
 
       mode : {
         isPressed: false,
-        bindTap(that) {
-          let newMode = that.data.mode;
+        bindTap() {
+          let newMode = this.data.mode;
           if (newMode === 3) {
             newMode = 0;
           } else {
             newMode++;
           }
-          that.setData({
+          this.setData({
             mode: newMode,
           });
-          return JSON.stringify({ mode: newMode });
+          const message =  JSON.stringify({ mode: newMode });
+          Comm.sendMessage(this.data.id, message);
         },
       },
 
       wifi : {
         isPressed: false,
-        bindTap(that) {
-          const newIsWiFiOpen = !that.data.isWiFiOpen;
-          that.setData({
+        bindTap() {
+          const newIsWiFiOpen = !this.data.isWiFiOpen;
+          this.setData({
             isWiFiOpen: newIsWiFiOpen,
           });
-          return JSON.stringify({ wifi: newIsWiFiOpen? 'on' : 'off' });
+          const message = JSON.stringify({ wifi: newIsWiFiOpen? 'on' : 'off' });
+          Comm.sendMessage(this.data.id, message);
         },
       },
 
@@ -94,11 +101,14 @@ Page({
   async onLoad(options) {
     this.setData({
       name: options.name,
-      deviceId: options.deviceId,
+      id: { 
+        deviceId: options.deviceId,
+        mac: options.mac,
+      }
     });
-    let deviceId = this.data.deviceId;
+    let id = this.data.id;
 
-    this.listener = {
+    this.data.listener = {
       onStateChange: state => {
         if (!(state.bluetooth.available || state.mqtt)) {
           wx.showModal({
@@ -112,23 +122,34 @@ Page({
           });
         }
       },
-      onMessageReceived: (deviceId, message) => {
-        this.handleReceivedMessage(deviceId, message);
+      onMessageReceived: (id, message) => {
+        this.handleReceivedMessage(id, message);
       },
+      onConnectionChange: (id, connected) => {
+        if (id.mac == this.data.id.mac && !connected.bluetooth) {
+          wx.showModal({
+            title: '设备离线',
+            showCancel: false,
+          });
+          wx.navigateBack({
+            delta: 2,
+          })
+        }
+      }
     };
-    Comm.listeners.add(this.listener);
+    Comm.listeners.add(this.data.listener);
 
     try {
       Comm.wait({
-        deviceId,
-        time: 2000,
+        id,
+        time: 5000,
         prepare: async () => {
           await wx.showLoading({
             title: '正在连接',
             mask: true,
           });
-          await Comm.connect(deviceId);
-          await Comm.sendMessage(deviceId, JSON.stringify({type: 'get'}));
+          await Comm.connect(id);
+          await Comm.sendMessage(id, JSON.stringify({type: 'get'}));
         },
         success: () => {
           wx.hideLoading();
@@ -144,7 +165,6 @@ Page({
           });
         }
       })
-      
     }
     catch (err) {
       throw err;
@@ -164,21 +184,22 @@ Page({
   },
 
   onUnload() {
-    Comm.listeners.delete(this.listener);
+    Comm.listeners.delete(this.data.listener);
+    Comm.disconnect(this.data.id);
   },
   
   dragStart(e) {
     const name = e.currentTarget.dataset.name;
     const button = this.data.buttons[name];
     button.startX = e.changedTouches[0].clientX;
-    button.startValue = button.getValue(this);
+    button.startValue = button.getValue.bind(this)();
   },
 
   dragTouch(e) {
     const name = e.currentTarget.dataset.name;
     const button = this.data.buttons[name];
     const value = Math.floor(Math.max(0, Math.min(button.startValue + (e.changedTouches[0].clientX - button.startX) / this.data.dragWidth * 100, 100)));
-    button.setValue(this, value);
+    button.setValue.bind(this)(value);
     
     if (value % 10 == 0) {
       if (!this.data.vibrateShort && (value === 0 || value === 100 || name == 'color')) {
@@ -196,12 +217,12 @@ Page({
     const button = this.data.buttons[name];
     if (e.changedTouches[0].clientX == button.startX) {
       const value = Math.floor((e.changedTouches[0].clientX - button.left) / this.data.dragWidth * 100);
-      button.setValue(this, value);
+      button.setValue.bind(this)(value);
     };
     let message = '';
     if (name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
     else if (name == 'color') message = JSON.stringify({ color: this.data.color});
-    await Comm.sendMessage(this.data.deviceId, message);
+    await Comm.sendMessage(this.data.id, message);
   },
 
   onTouchStart(e) {
@@ -231,14 +252,10 @@ Page({
       success: async () => {
         if (name == 'config') {
           wx.navigateTo({
-            url: `/pages/setup/setup?deviceId=${this.data.deviceId}`,
+            url: `/pages/setup/setup?deviceId=${this.data.id.deviceId}&mac=${this.data.id.mac}`,
           });
         }
-        else {
-          const deviceId = this.data.deviceId;
-          const message = this.data.buttons[name].bindTap(this);
-          await Comm.sendMessage(deviceId, message);
-        }
+        else this.data.buttons[name].bindTap.bind(this)();
       },
     });
   },
@@ -247,8 +264,8 @@ Page({
     wx.navigateBack();
   },
 
-  handleReceivedMessage(deviceId, message) {
-    if (deviceId == this.data.deviceId) {
+  handleReceivedMessage(id, message) {
+    if (id.mac == this.data.id.mac) {
       try {
         const parsedMessage = JSON.parse(message);
         if (parsedMessage.power) {

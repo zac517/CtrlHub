@@ -28,15 +28,19 @@
     bindtouchstart="{{isOpen ? 'dragStart' : ''}}" 
     bindtouchend="{{isOpen ? 'dragEnd' : ''}}" 
     data-name="brightness">
+      <view class="drag-text {{isOpen ? '' : 'inactive'}}" style="{{brightness > 50 ? 'left' : 'right'}}: 0">亮度</view>
+    
         <view class="bright-child {{isOpen ? '' : 'inactive'}}" style="width: {{brightness + '%'}}"></view>
     </view>
 
     <view 
-    class="panel-button long-button color-wrapper {{isOpen ? '' : 'inactive'}}" 
-
+    class="panel-button long-button color-wrapper" 
+    bindtouchmove="{{isOpen ? 'dragTouch' : ''}}" 
     bindtouchstart="{{isOpen ? 'dragStart' : ''}}" 
     bindtouchend="{{isOpen ? 'dragEnd' : ''}}" 
     data-name="color">
+      <view class="drag-text {{isOpen ? '' : 'inactive'}}" style="{{color > 50 ? 'left' : 'right'}}: 0">色温</view>
+      <view class="bright-child {{isOpen ? '' : 'inactive'}}" style="width: {{color + '%'}}"></view>
     </view>
 
     <view 

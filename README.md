@@ -6,8 +6,9 @@
 
 ## 项目特色
 
-### 小程序前端设计
-1. `CSS` 实现响应式布局，适配不同尺寸设备。
+### 前端
+1. UI 简洁，适当交互反馈，响应式布局。
+2. 低耦合且易用的通信模块，兼容 ios，实现任务恢复，自适应通信。
 
 ## 简单使用
 
@@ -15,25 +16,27 @@
 
 
 ## 等待修复的问题
-
-
-1.暂未兼容 iPhone 设备。
+1. 还在使用 iconfont 上的图标。
+2. 为了显示一部分字引入了较大的字体。
+3. 未实现 MQTT 设备离线检测。
+4. 通信模块暂不支持连接选项。
+5. 更好的色温条 UI 设计。
 
 ## 相关信息
 
-### home 页面 Object device 属性
+### Object device 属性
 
 |属性|类型|解释|
 |-|-|-|
-|id|string|设备在列表中的唯一 ID|
+|deviceId|string|设备的 deviceId|
+|mac|string|设备的 mac 地址|
 |name|string|设备名称|
-|deviceId|string|设备的 deviceId，Android 平台为被控设备的蓝牙 MAC 地址|
-|manufacturer|string|设备制造商标识|
+|manufacturer|string|制造商标识|
 |isSelected|bool|设备被选中标识|
 
 ### 通信格式
 
-#### 小程序发送内容
+#### 小程序端发送内容
 
 |内容|解释|
 |-|-|
@@ -47,7 +50,7 @@
 |{"type": "try"}|要求设备尝试连接 WiFi|
 |{"type": "get"}|获取设备状态|
 
-#### 小程序接收内容
+#### 小程序端接收内容
 
 |内容|解释|
 |-|-|

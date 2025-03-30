@@ -1,18 +1,15 @@
-import { Comm } from '../../utils/comm.js'
+import Comm from '../../utils/comm.js'
 Page({
   data: {
     devices: [],
     isOnSelect: false,
     isSelectedAll: false,
     selectedCount: 0,
-
     state: {
       bluetooth: { available: false, discovering: false },
       mqtt: false,
     },
-
     available: false,
-
     listener: null,
   },
 
@@ -158,7 +155,7 @@ Page({
       else {
         if (e.currentTarget.dataset.device.manufacturer == "Lumina") {
           wx.navigateTo({
-            url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}`,
+            url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}&mac=${e.currentTarget.dataset.device.mac}`,
           });
         }
         else {
@@ -202,9 +199,9 @@ Page({
     }
   },
 
-  selectManufacturer() {
+  goToManufacturer() {
     wx.navigateTo({
-      url: `/pages/manufacturer/manufacturer?devices=${this.data.devices}`,
+      url: `/pages/manufacturer/manufacturer`,
     });
   },
 });
