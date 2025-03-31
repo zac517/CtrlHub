@@ -7,7 +7,7 @@
     <view class="list">
       <view class="card" bind:tap="goToAdd">
         <text class="card-title">Lumina 系列</text>
-        <view class="logo">Lumina</view>
+        <image src="../../image/lumina.svg" class="logo"></image>
       </view>
       <view class="card inactive">
         <text class="card-title">敬请期待</text>

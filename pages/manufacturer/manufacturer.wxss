@@ -1,16 +1,7 @@
-@import "../../font/font.wxss";
-
 .logo {
   position: absolute;
-  font-size: 80px;
-  font-family: Impact;
-  font-style: italic;
-  bottom: 0;
-  right: 0;
-  line-height: 50px;
-  width: 140px;
-  background-image: linear-gradient(to left top, white, #eeeeee);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  height: 100px;
+  width: 160%;
+  right: -70%;
+  bottom: -20px;
 }
