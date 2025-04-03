@@ -113,7 +113,7 @@ Page({
     let selectedCount = 0;
 
     newDevices.forEach((device) => {
-      if (device.id === selectedDevice.id) {
+      if (device.mac === selectedDevice.mac) {
         device.isSelected =!device.isSelected;
       }
       if (device.isSelected) {
@@ -180,7 +180,7 @@ Page({
             const newName = res.content;
             if (newName) {
               const newDevices = this.data.devices.map(device => {
-                if (device.id === selectedDevice.id) {
+                if (device.mac === selectedDevice.mac) {
                   return {
                     ...device,
                     name: newName,

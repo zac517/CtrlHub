@@ -201,8 +201,8 @@ Page({
     const value = Math.floor(Math.max(0, Math.min(button.startValue + (e.changedTouches[0].clientX - button.startX) / this.data.dragWidth * 100, 100)));
     button.setValue.bind(this)(value);
     
-    if (value % 10 == 0) {
-      if (!this.data.vibrateShort && (value === 0 || value === 100 || name == 'color')) {
+    if (value === 0 || value === 100) {
+      if (!this.data.vibrateShort) {
         wx.vibrateShort({
           type: "heavy",
           success: () => this.setData({vibrateShort: true}),
