@@ -1,22 +1,14 @@
-## 介绍
+## 简介
 
-微信小程序通过蓝牙和 mqtt 与物联网设备进行通信，并支持配网操作。
+微信小程序通过蓝牙和 mqtt 与物联网设备进行通信，支持配网操作。
+
+交互界面简洁，响应式布局，自适应通信，兼容 ios。
 
 [查看硬件代码](https://github.com/zac517/CtrlNode)
 
-### 项目特色
-
-1. UI 简洁，适当交互反馈，响应式布局。
-2. 轻量且易用的通信模块，兼容 ios，实现任务恢复，自适应通信。
-
 ### 简单使用
-1. 微信公众平台 -> 管理 -> 开发管理 -> 开发设置 -> 服务器域名 -> socket合法域名：将 mqtt 服务器地址加入。
-2. 将本项目代码克隆到本地 。
-
-## 等待修复的问题
-1. 还在使用 iconfont 图标。
-2. 未实现 MQTT 设备离线检测。
-3. 通信模块暂不支持连接选项。
+1. 将本项目代码克隆到本地 。
+2. 微信公众平台 -> 管理 -> 开发管理 -> 开发设置 -> 服务器域名 -> socket合法域名：将 mqtt 服务器地址加入。
 
 ## 相关信息
 
@@ -29,6 +21,16 @@
 |name|string|设备名称|
 |manufacturer|string|制造商标识|
 |isSelected|bool|设备被选中标识|
+
+### Object listener 属性
+
+|属性|类型|解释|
+|-|-|-|
+|onStateChange|function|模块状态变化回调|
+|onStateRecovery|function|模块状态恢复回调|
+|onConnectionChange|function|设备连接状态变化回调|
+|onMessageReceived|function|收到消息回调|
+|onDeviceChange|function|发现设备回调，仅适用于 BLE|
 
 ### 通信格式
 

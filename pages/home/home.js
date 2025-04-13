@@ -44,7 +44,7 @@ Page({
     Comm.listeners.delete(this.listener);
   },
 
-  startSelect(e) {
+  startSelect() {
     this.setData({
       isOnSelect: true,
     });

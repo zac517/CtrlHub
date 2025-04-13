@@ -12,6 +12,7 @@ Page({
 
   async onLoad() {
     this.data.listener = {
+        onStateRecovery: () => BLE.startDiscovery(),
         onDeviceChange: devices => {
           if (devices.length > 0) wx.hideLoading();
           this.setData({ devices })
@@ -83,7 +84,6 @@ Page({
         manufacturer = "Unknown";
         mac = this.data.selectedDevice.deviceId.toLowerCase();
     }
-    console.log(mac);
     const newDevice = {
         deviceId: this.data.selectedDevice.deviceId,
         mac,
@@ -95,7 +95,6 @@ Page({
     let savedDevices = wx.getStorageSync('devices') || [];
     let deviceIndex = -1;
 
-    // 查找是否存在相同 MAC 地址的设备
     for (let i = 0; i < savedDevices.length; i++) {
         if (savedDevices[i].mac === mac) {
             deviceIndex = i;
@@ -103,17 +102,10 @@ Page({
         }
     }
 
-    if (deviceIndex!== -1) {
-        // 如果存在相同 MAC 地址的设备，覆盖原信息
-        savedDevices[deviceIndex] = newDevice;
-    } else {
-        // 如果不存在，添加新设备
-        savedDevices = [newDevice, ...savedDevices];
-    }
+    if (deviceIndex!== -1) savedDevices[deviceIndex] = newDevice;
+    else savedDevices = [newDevice, ...savedDevices];
 
     wx.setStorageSync('devices', savedDevices);
-    wx.navigateBack({
-        delta: 2,
-    });
+    wx.navigateBack({ delta: 2 });
   }
 });

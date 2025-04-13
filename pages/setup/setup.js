@@ -21,16 +21,16 @@ Page({
     onUnload() {
     },
 
-    /**返回控制界面 */
+    /** 返回控制界面 */
     backToControl() {
         wx.navigateBack();
     },
 
-    /**发送 WiFi 信息 */
+    /** 发送 WiFi 信息 */
     async setWiFi() {
       const { id, ssid, password } = this.data;
       try {
-        Comm.wait({
+        Comm.QaA({
           id,
           time: 15000,
           prepare: async () => {

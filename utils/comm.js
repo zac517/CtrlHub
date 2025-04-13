@@ -13,6 +13,11 @@ class CommManager {
     this.macMap = new Map();
 
     this.BLEListener = {
+      onStateRecovery: () => {
+        this.listeners.forEach(listener => {
+          if (listener.onStateRecovery) listener.onStateRecovery();
+        });
+      },
       onStateChange: state => {
         this.state.bluetooth = state;
         this.listeners.forEach(listener => {
@@ -36,6 +41,11 @@ class CommManager {
     }
 
     this.MQTTListener = {
+      onStateRecovery: () => {
+        this.listeners.forEach(listener => {
+          if (listener.onStateRecovery) listener.onStateRecovery();
+        });
+      },
       onStateChange: state => {
         this.state.mqtt = state;
         this.listeners.forEach(listener => {
@@ -105,7 +115,7 @@ class CommManager {
   }
 
   /** 发送并判断接收到的信息 */
-  async wait(options) {
+  async QaA(options) {
     const { id, success, fail, prepare, time } = options;
     const parsedId = this.parse(id);
     const timeout = setTimeout(() => {
@@ -125,6 +135,5 @@ class CommManager {
     prepare();
   }
 }
-
 
 export default new CommManager();

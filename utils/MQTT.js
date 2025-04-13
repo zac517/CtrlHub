@@ -8,7 +8,6 @@ class MQTTManager {
       clientId: 'wx_' + Date.now(),
       topicPrefix: 'Lumina',
     }
-
     this.connectOptions = {
       useSSL: true,
       timeout: 10,
@@ -20,12 +19,11 @@ class MQTTManager {
         this.connected = true;
         this.listeners.forEach(listener => {
           if (listener.onStateChange) listener.onStateChange(true);
+          if (listener.onStateRecovery) listener.onStateRecovery();
         });
       },
       onFailure: () => this.connected = false,
     }
-
-    this.client = null;
     this.connected = false;
     
     const uri = this.config.uri;
@@ -36,10 +34,7 @@ class MQTTManager {
     this.client.connect(this.connectOptions);
 
     wx.onNetworkStatusChange((res) => {
-      if (res.isConnected) {
-        this.client.connect(this.connectOptions);
-        console.log('重连 mqtt');
-      }
+      if (res.isConnected) this.client.connect(this.connectOptions);
     })
 
     this.client.onConnectionLost = () => {
@@ -51,9 +46,12 @@ class MQTTManager {
 
     this.client.onMessageArrived = msg => {
       const topic = msg.destinationName;
-      const deviceId = topic.split('/').slice(-2)[0];
+      const mac = topic.split('/').slice(-2)[0];
       this.listeners.forEach(listener => {
-        if (listener.onMessageReceived) listener.onMessageReceived(deviceId, msg.payloadString);
+        if (msg.payloadString == "Device disconnected unexpectedly") {
+          if (listener.onConnectionChange) listener.onConnectionChange(mac, false);
+        }
+        else if (listener.onMessageReceived) listener.onMessageReceived(mac, msg.payloadString);
       });
     };
   }

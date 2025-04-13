@@ -24,9 +24,7 @@ Page({
         isPressed: false,
         bindTap() {
           const newIsOpen =! this.data.isOpen;
-          this.setData({
-            isOpen: newIsOpen,
-          });
+          this.setData({ isOpen: newIsOpen });
           const message = JSON.stringify({ power: newIsOpen? 'on' : 'off' });
           Comm.sendMessage(this.data.id, message);
         },
@@ -65,14 +63,9 @@ Page({
         isPressed: false,
         bindTap() {
           let newMode = this.data.mode;
-          if (newMode === 3) {
-            newMode = 0;
-          } else {
-            newMode++;
-          }
-          this.setData({
-            mode: newMode,
-          });
+          if (newMode === 3) newMode = 0;
+          else newMode++;
+          this.setData({ mode: newMode });
           const message =  JSON.stringify({ mode: newMode });
           Comm.sendMessage(this.data.id, message);
         },
@@ -82,9 +75,7 @@ Page({
         isPressed: false,
         bindTap() {
           const newIsWiFiOpen = !this.data.isWiFiOpen;
-          this.setData({
-            isWiFiOpen: newIsWiFiOpen,
-          });
+          this.setData({ isWiFiOpen: newIsWiFiOpen });
           const message = JSON.stringify({ wifi: newIsWiFiOpen? 'on' : 'off' });
           Comm.sendMessage(this.data.id, message);
         },
@@ -106,78 +97,38 @@ Page({
         mac: options.mac,
       }
     });
-    let id = this.data.id;
 
     this.data.listener = {
+      onStateRecovery: () => this.init(),
       onStateChange: state => {
         if (!(state.bluetooth.available || state.mqtt)) {
           wx.showModal({
             title: '蓝牙和网络均不可用',
             showCancel: false,
-            success: (res) => {
-              wx.navigateBack({
-                delta: 2,
-              })
-            }
+            success: () => wx.navigateBack({ delta: 2 })
           });
         }
       },
-      onMessageReceived: (id, message) => {
-        this.handleReceivedMessage(id, message);
-      },
+      onMessageReceived: (id, message) => this.handleReceivedMessage(id, message),
       onConnectionChange: (id, connected) => {
-        if (id.mac == this.data.id.mac && !connected.bluetooth) {
+        if (id.mac == this.data.id.mac && !connected.bluetooth && !connected.mqtt) {
           wx.showModal({
             title: '设备离线',
             showCancel: false,
           });
-          wx.navigateBack({
-            delta: 2,
-          })
+          wx.navigateBack({ delta: 2 })
         }
       }
     };
     Comm.listeners.add(this.data.listener);
-
-    try {
-      Comm.wait({
-        id,
-        time: 5000,
-        prepare: async () => {
-          await wx.showLoading({
-            title: '正在连接',
-            mask: true,
-          });
-          await Comm.connect(id);
-          await Comm.sendMessage(id, JSON.stringify({type: 'get'}));
-        },
-        success: () => {
-          wx.hideLoading();
-        },
-        fail: async () => {
-          wx.hideLoading();
-          wx.showModal({
-            title: '设备离线',
-            showCancel: false,
-          });
-          wx.navigateBack({
-            delta: 1,
-          });
-        }
-      })
-    }
-    catch (err) {
-      throw err;
-    }
+    this.init();
   },
 
   onReady() {
     const query = wx.createSelectorQuery();
     query.select('.long-button').boundingClientRect((rect) => {
       if (rect) {
-        this.setData({
-          dragWidth: rect.width,
-        });
+        this.setData({  dragWidth: rect.width });
         this.data.buttons.brightness.left = rect.left;
       }
     }).exec();
@@ -230,9 +181,7 @@ Page({
     let newButton = { ...(this.data.buttons[name]), isPressed: true };
     let newButtons = {...this.data.buttons};
     newButtons[name] = newButton;
-    this.setData({
-      buttons: newButtons,
-    });
+    this.setData({ buttons: newButtons });
   },
 
   onTouchEnd(e) {
@@ -240,9 +189,7 @@ Page({
     let newButton = { ...(this.data.buttons[name]), isPressed: false };
     let newButtons = {...this.data.buttons};
     newButtons[name] = newButton;
-    this.setData({
-      buttons: newButtons,
-    });
+    this.setData({ buttons: newButtons });
   },
 
   onTap(e) {
@@ -300,4 +247,33 @@ Page({
       }
     }
   },
+
+  init() {
+    let id = this.data.id;
+    Comm.QaA({
+      id,
+      time: 5000,
+      prepare: async () => {
+        await wx.showLoading({
+          title: '正在连接',
+          mask: true,
+        });
+        await Comm.connect(id);
+        await Comm.sendMessage(id, JSON.stringify({type: 'get'}));
+      },
+      success: () => {
+        wx.hideLoading();
+      },
+      fail: async () => {
+        wx.hideLoading();
+        wx.showModal({
+          title: '设备离线',
+          showCancel: false,
+        });
+        wx.navigateBack({
+          delta: 1,
+        });
+      }
+    })
+  }
 });
