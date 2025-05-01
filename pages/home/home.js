@@ -1,15 +1,11 @@
-import Comm from '../../utils/comm.js'
+import Comm from '../../utils/comm.js';
 Page({
   data: {
     devices: [],
     isOnSelect: false,
     isSelectedAll: false,
     selectedCount: 0,
-    state: {
-      bluetooth: { available: false, discovering: false },
-      mqtt: false,
-    },
-    available: false,
+    state: false,
     listener: null,
   },
 
@@ -19,14 +15,11 @@ Page({
     });
     this.cancelSelectAll();
     this.listener = {
-      onStateChange: state => {
-        this.setData({ 
-          state,
-          available: state.bluetooth.available || state.mqtt,
-         })
-      },
+      onStateChange: state => this.setData({ state }),
     };
     Comm.listeners.add(this.listener);
+
+    this.setData({ state: Comm.state });
   },
 
   onHide() {
@@ -146,7 +139,7 @@ Page({
     if (this.data.isOnSelect) {
       this.handleCheckboxChange(e);
     } else {
-      if (!this.data.available) {
+      if (!this.data.state) {
         wx.showToast({
           title: '请先开启蓝牙或连接网络',
           icon: 'none'
@@ -200,8 +193,6 @@ Page({
   },
 
   goToManufacturer() {
-    wx.navigateTo({
-      url: `/pages/manufacturer/manufacturer`,
-    });
+    wx.navigateTo({ url: '/pages/manufacturer/manufacturer' });
   },
 });

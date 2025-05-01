@@ -3,11 +3,15 @@ import Paho from "./paho-mqtt-min.js";
 class MQTTManager {
   constructor() {
     this.listeners = new Set();
+    this.state = false;
+    this.connectedDevices = new Set();
+    this.client = null;
+
     this.config = {
       uri: 'wss://broker-cn.emqx.io:8084/mqtt',
-      clientId: 'wx_' + Date.now(),
       topicPrefix: 'Lumina',
     }
+
     this.connectOptions = {
       useSSL: true,
       timeout: 10,
@@ -16,29 +20,34 @@ class MQTTManager {
       reconnect: false,
       mqttVersion: 4,
       onSuccess: () => {
-        this.connected = true;
+        this.state = true;
         this.listeners.forEach(listener => {
           if (listener.onStateChange) listener.onStateChange(true);
           if (listener.onStateRecovery) listener.onStateRecovery();
         });
       },
-      onFailure: () => this.connected = false,
     }
-    this.connected = false;
     
+    this.init();
+  }
+
+  /** 初始化函数 */
+  init() {
     const uri = this.config.uri;
     const host = uri.split('://')[1].split(':')[0];
     const port = Number(uri.includes(':') ? uri.split(':')[2].split('/')[0] : 8084);
 
-    this.client = new Paho.Client(host, port, this.config.clientId);
-    this.client.connect(this.connectOptions);
+    this.client = new Paho.Client(host, port, 'wx_' + Date.now());
+    
 
     wx.onNetworkStatusChange((res) => {
-      if (res.isConnected) this.client.connect(this.connectOptions);
+      if (res.isConnected) {
+        this.client.connect(this.connectOptions);
+      }
     })
 
-    this.client.onConnectionLost = () => {
-      this.connected = false;
+    this.client.onConnectionLost = (err) => {
+      this.state = false;
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(false);
       });
@@ -49,34 +58,42 @@ class MQTTManager {
       const mac = topic.split('/').slice(-2)[0];
       this.listeners.forEach(listener => {
         if (msg.payloadString == "Device disconnected unexpectedly") {
-          if (listener.onConnectionChange) listener.onConnectionChange(mac, false);
+          if (listener.onConnectionChange) 
+          this.connectedDevices.delete(mac);listener.onConnectionChange(mac, false);
+        }
+        else if (msg.payloadString == "pong") {
+          this.connectedDevices.add(mac);
+          if (listener.onConnectionChange) listener.onConnectionChange(mac, true);
         }
         else if (listener.onMessageReceived) listener.onMessageReceived(mac, msg.payloadString);
       });
     };
+
+    this.client.connect(this.connectOptions);
   }
 
-  /** 订阅设备 */
-  subscribe(mac, config) {
+  /** 连接设备 */
+  async connect(mac, config) {
     this.config = { ...this.config, ...config };
     const topic = `${this.config.topicPrefix}/devices/${mac}/state`;
     this.client.subscribe(topic, { qos: 2 });
-    this.listeners.forEach(listener => {
-      if (listener.onConnectionChange) listener.onConnectionChange(mac, true);
-    });
+    this.sendMessage(mac, "ping");
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    return this.connectedDevices.has(mac);
   }
 
-  /** 取消订阅设备 */
-  unsubscribe(mac) {
+  /** 断开连接 */
+  disconnect(mac) {
     const topic = `${this.config.topicPrefix}/devices/${mac}/state`;
     this.client.unsubscribe(topic);
+    this.connectedDevices.delete(mac);
     this.listeners.forEach(listener => {
       if (listener.onConnectionChange) listener.onConnectionChange(mac, false);
     });
   }
 
   /** 发送消息 */
-  publish(mac, message) {
+  sendMessage(mac, message) {
     const topic = `${this.config.topicPrefix}/devices/${mac}/control`;
     const mqttMessage = new Paho.Message(message);
     mqttMessage.destinationName = topic;
@@ -86,11 +103,6 @@ class MQTTManager {
     this.client.send(mqttMessage);
   }
 
-  /** 断开连接 */
-  disconnect() {
-    this.client.disconnect();
-    this.connected = false;
-  }
 }
 
 export default new MQTTManager();

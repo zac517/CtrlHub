@@ -2,7 +2,7 @@ import Comm from '../../utils/comm.js';
 
 Page({
     data: {
-      id: '',
+      mac: '',
       ssid: '',
       password: '',
       listener: null,
@@ -10,12 +10,7 @@ Page({
     },
 
     async onLoad(options) {
-      this.setData({
-          id: {
-            deviceId: options.deviceId,
-            mac: options.mac,
-          }
-      });
+      this.setData({ mac: options.mac });
     },
 
     onUnload() {
@@ -28,19 +23,19 @@ Page({
 
     /** 发送 WiFi 信息 */
     async setWiFi() {
-      const { id, ssid, password } = this.data;
+      const { mac, ssid, password } = this.data;
       try {
         Comm.QaA({
-          id,
+          mac,
           time: 15000,
           prepare: async () => {
             wx.showLoading({
               title: '正在配网',
               mask: true
             });
-            await Comm.sendMessage(id, JSON.stringify({ ssid }));
-            await Comm.sendMessage(id, JSON.stringify({ pw: password }));
-            await Comm.sendMessage(id, JSON.stringify({ type: "try" }));
+            await Comm.sendMessage(mac, JSON.stringify({ ssid }));
+            await Comm.sendMessage(mac, JSON.stringify({ pw: password }));
+            await Comm.sendMessage(mac, JSON.stringify({ type: "try" }));
           },
           success: (message) => {
             this.handleReceivedMessage(message);

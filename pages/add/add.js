@@ -2,34 +2,48 @@ import BLE from '../../utils/BLE.js';
 
 Page({
   data: {
-    bluetoothAvailable: false,
+    listener: null,
+    state: false,
     devices: [],
     selectedDevice: null,
     tempDevices: [],
     enteredName: '',
-    listener: null,
   },
 
   async onLoad() {
+    // 准备监听器
     this.data.listener = {
-        onStateRecovery: () => BLE.startDiscovery(),
+        onStateRecovery: async () => {
+          await wx.showLoading({
+            title: '正在搜索',
+            mask: true,
+          })
+          await BLE.startDiscovery()
+        },
         onDeviceChange: devices => {
           if (devices.length > 0) wx.hideLoading();
-          this.setData({ devices })
+          this.setData({ devices });
         },
-        onStateChange: state => this.setData({ bluetoothAvailable: state.available }),
+        onStateChange: state => this.setData({ state }),
     };
     BLE.listeners.add(this.data.listener);
-    wx.showLoading({
-      title: '正在搜索',
-      mask: true,
-    })
-    await BLE.startDiscovery();
+
+    // 同步初始值
+    this.setData({ state: BLE.state});
+
+    // 初始操作
+    if (this.data.state) {
+      await wx.showLoading({
+        title: '正在搜索',
+        mask: true,
+      })
+      await BLE.startDiscovery()
+    };
   },
 
   async onUnload() {
     BLE.listeners.delete(this.data.listener);
-    await BLE.stopDiscovery();
+    if (this.data.state) await BLE.stopDiscovery();
   },
 
   /** 返回制造商选择 */ 
@@ -46,7 +60,7 @@ Page({
 
   /** 点击选择器 */ 
   onPickerTap() {
-    if (this.data.bluetoothAvailable) {
+    if (this.data.state) {
       this.data.tempDevices = [...this.data.devices];
     } else {
       wx.showToast({
@@ -84,9 +98,10 @@ Page({
         manufacturer = "Unknown";
         mac = this.data.selectedDevice.deviceId.toLowerCase();
     }
+
     const newDevice = {
-        deviceId: this.data.selectedDevice.deviceId,
         mac,
+        deviceId: this.data.selectedDevice.deviceId,
         name: this.data.enteredName || this.data.selectedDevice.name,
         manufacturer,
         isSelected: false,

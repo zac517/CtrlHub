@@ -1,8 +1,7 @@
 class BLEManager {
   constructor() {
     this.listeners = new Set();
-    this.platform = wx.getDeviceInfo().platform;
-    this.state = { available: false, discovering: false };
+    this.state = false;
     this.foundDevices = new Map();
     this.connectedDevices = new Map();
     this.config = {
@@ -18,7 +17,7 @@ class BLEManager {
   async init() {
     try {
       await wx.openBluetoothAdapter({ mode: "central" });
-      this.state = { available: true, discovering: false };
+      this.state = true;
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(this.state);
         if (listener.onStateRecovery) listener.onStateRecovery();
@@ -28,22 +27,24 @@ class BLEManager {
 
     wx.onBluetoothAdapterStateChange(res => {
       const lastState = this.state;
-      this.state = res;
+      this.state = res.available;
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(this.state);
-        if (!lastState.available && this.state.available && listener.onStateRecovery) listener.onStateRecovery();
+        if (!lastState && this.state && listener.onStateRecovery) listener.onStateRecovery();
       })
     });
 
+    // 模块采取发现的设备可重复上报的逻辑 以实现发现设备的实时更新
     wx.onBluetoothDeviceFound(res => {
+      // 这种情况下 每一批发现的设备就是当前扫描到的实时设备 里面会有重复设备 通过 Set 解决
       res.devices.forEach(device => {
-        if (device.name && device.RSSI > this.config.discovery.rssiThreshold) {
-          this.foundDevices.set(device.deviceId, device);
-        }
+        if (device.name && device.RSSI > this.config.discovery.rssiThreshold) this.foundDevices.set(device.deviceId, device);
       });
+      // 将结果返回给监听器
       this.listeners.forEach(listener => {
         if (listener.onDeviceChange) listener.onDeviceChange(Array.from(this.foundDevices.values()));
       })
+      // 清除发现的设备
       this.foundDevices.clear();
     });
 
@@ -64,7 +65,6 @@ class BLEManager {
   /** 开启扫描 */
   async startDiscovery(config) {
     this.config.discovery = { ...this.config.discovery, ...config };
-    if (!this.state.available) return;
     await wx.startBluetoothDevicesDiscovery({
       allowDuplicatesKey: true,
       interval: this.config.discovery.scanInterval,
@@ -74,23 +74,31 @@ class BLEManager {
 
   /** 关闭扫描 */
   async stopDiscovery() {
-    if (!this.state.available) return;
     await wx.stopBluetoothDevicesDiscovery();
   }
 
   /** 连接设备并记录服务和特征值 */
   async connect(deviceId) {
-    if (!this.state.available) return;
-    await wx.createBLEConnection({ deviceId });
-    this.connectedDevices.set(deviceId, { serviceData: null });
-    const serviceData = await this._discoverServicesAndCharacteristics(deviceId);
-    this.connectedDevices.get(deviceId).serviceData = serviceData;
-    this._onMessageReceived(deviceId, true);
-    return true;
-  }
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error()), 5000);
+    });
+
+    try {
+        await Promise.race([
+            wx.createBLEConnection({ deviceId }),
+            timeoutPromise
+        ]);
+        const serviceData = await this._findServsAndChars(deviceId);
+        this.connectedDevices.set(deviceId, { serviceData });
+        await this._setMessageReceiving(deviceId, true);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
 
   /** 发现服务和特征值 */
-  async _discoverServicesAndCharacteristics(deviceId) {
+  async _findServsAndChars(deviceId) {
     const servicesRes = await wx.getBLEDeviceServices({ deviceId });
     const services = servicesRes.services;
     const servicePromises = services.map(async service => {
@@ -122,7 +130,7 @@ class BLEManager {
   }
 
   /** 修改消息接收通知 */
-  async _onMessageReceived(deviceId, state) {
+  async _setMessageReceiving(deviceId, state) {
     const device = this.connectedDevices.get(deviceId);
     const service = device.serviceData[0];
     const notifyChar = service.characteristics.find(char => char.properties.notify || char.properties.indicate);
@@ -136,10 +144,8 @@ class BLEManager {
 
   /** 断开连接 */
   async disconnect(deviceId) {
-    if (!this.state.available) return;
-    await this._onMessageReceived(deviceId, false);
+    await this._setMessageReceiving(deviceId, false);
     await wx.closeBLEConnection({ deviceId });
-    return true;
   }
 
   /** 将字符串转化为ArrayBuffer */

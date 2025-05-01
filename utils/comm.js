@@ -4,127 +4,168 @@ import MQTT from "./MQTT.js"
 class CommManager {
   constructor() {
     this.listeners = new Set();
-    this.state = {
-      bluetooth: { available: false, discovering: false },
+    
+    this.state = false;
+    this._state = {
+      bluetooth: false,
       mqtt: false,
     };
-    this.deviceStatus = new Map();
+
+    this.connectedDevices = new Map();
+    this._connectedDevices = new Map();
+
     this.deviceIdMap = new Map();
     this.macMap = new Map();
 
+    this.init();
+  }
+
+  /** 初始化函数 */
+  init() {
+    this._state.bluetooth = BLE.state;
+    this._state.mqtt = MQTT.state;
+    this.state = this._state.bluetooth || this._state.mqtt;
+
     this.BLEListener = {
-      onStateRecovery: () => {
-        this.listeners.forEach(listener => {
-          if (listener.onStateRecovery) listener.onStateRecovery();
-        });
-      },
+      onStateRecovery: () => this.connectedDevices.keys().forEach( mac => BLE.connect(this.convert(mac)) ),
       onStateChange: state => {
-        this.state.bluetooth = state;
-        this.listeners.forEach(listener => {
-          if (listener.onStateChange) listener.onStateChange(this.state);
-        });
+        this._state.bluetooth = state;
+        const lastState = this.state;
+        this.state = this._state.bluetooth || this._state.mqtt;
+        if (lastState != this.state) {
+          this.listeners.forEach(listener => {
+            if (listener.onStateChange) listener.onStateChange(this.state);
+            if (this.state && listener.onStateRecovery) listener.onStateRecovery();
+          });
+        }
       },
       onConnectionChange: (deviceId, connected) => {
-        const parsedId = this.parse(deviceId);
-        const status = this.deviceStatus.get(parsedId.mac) || { bluetooth: false, mqtt: false };
-        this.deviceStatus.set(parsedId.mac, { ...status, bluetooth: connected });
-        const connectState = this.deviceStatus.get(parsedId.mac);
-        this.listeners.forEach(listener => {
-          if (listener.onConnectionChange) listener.onConnectionChange(parsedId, connectState);
-        });
+        const mac = this.convert(deviceId);
+        let status = this._connectedDevices.get(mac) || { bluetooth: false, mqtt: false };
+        status = { ...status, bluetooth: connected };
+        this._connectedDevices.set(mac, status);
+        
+        const lastState = this.connectedDevices.get(mac);
+        this.connectedDevices.set(mac, status.bluetooth || status.mqtt);
+
+        const state = this.connectedDevices.get(mac);
+
+        if (lastState != state) {
+          this.listeners.forEach(listener => {
+            if (listener.onConnectionChange) listener.onConnectionChange(mac, state);
+          });
+        }
       },
       onMessageReceived: (deviceId, message) => {
+        const mac = this.convert(deviceId);
         this.listeners.forEach(listener => {
-          if (listener.onMessageReceived) listener.onMessageReceived(this.parse(deviceId), message);
+          if (listener.onMessageReceived) listener.onMessageReceived(mac, message);
         });
       },
     }
 
     this.MQTTListener = {
-      onStateRecovery: () => {
-        this.listeners.forEach(listener => {
-          if (listener.onStateRecovery) listener.onStateRecovery();
-        });
-      },
+      onStateRecovery: () => this.connectedDevices.keys().forEach( mac => MQTT.connect(mac) ),
       onStateChange: state => {
-        this.state.mqtt = state;
-        this.listeners.forEach(listener => {
-          if (listener.onStateChange) listener.onStateChange(this.state);
-        });
+        this._state.mqtt = state;
+        const lastState = this.state;
+        this.state = this._state.bluetooth || this._state.mqtt;
+        if (lastState != this.state) {
+          this.listeners.forEach(listener => {
+            if (listener.onStateChange) listener.onStateChange(this.state);
+            if (this.state && listener.onStateRecovery) listener.onStateRecovery();
+          });
+        }
       },
       onConnectionChange: (mac, connected) => {
-        const parsedId = this.parse(mac);
-        const status = this.deviceStatus.get(parsedId.mac) || { bluetooth: false, mqtt: false };
-        this.deviceStatus.set(parsedId.mac, { ...status, mqtt: connected });
-        const connectState = this.deviceStatus.get(parsedId.mac);
-        this.listeners.forEach(listener => {
-          if (listener.onConnectionChange) listener.onConnectionChange(parsedId, connectState);
-        });
+        // 修改独立状态
+        let status = this._connectedDevices.get(mac) || { bluetooth: false, mqtt: false };
+        status = { ...status, mqtt: connected };
+        this._connectedDevices.set(mac, status);
+        
+        // 记录旧状态 修改总状态
+        const lastState = this.connectedDevices.get(mac);
+        this.connectedDevices.set(mac, status.bluetooth || status.mqtt);
+
+        const state = this.connectedDevices.get(mac);
+
+        // 如果状态变化
+        if (lastState != state) {
+          this.listeners.forEach(listener => {
+            if (listener.onConnectionChange) listener.onConnectionChange(mac, state);
+          });
+        }
       },
       onMessageReceived: (mac, message) => {
         this.listeners.forEach(listener => {
-          if (listener.onMessageReceived) listener.onMessageReceived(this.parse(mac) , message);
+          if (listener.onMessageReceived) listener.onMessageReceived(mac, message);
         });
       },
     }
-
     BLE.listeners.add(this.BLEListener);
     MQTT.listeners.add(this.MQTTListener);
   }
 
-  /** 解析 id */
-  parse(id) {
-    if (typeof id === "object") {
-      const {deviceId, mac} = id;
-      if (deviceId && mac) {
-        this.deviceIdMap.set(deviceId, mac);
-        this.macMap.set(mac, deviceId);
-      }
-      else throw new Error("请提供 deviceId 和 mac 地址");
-      return id;
+  /** 绑定 id */
+  bind(mac, deviceId) {
+    if (deviceId && mac) {
+      this.deviceIdMap.set(deviceId, mac);
+      this.macMap.set(mac, deviceId);
     }
-    else if (this.deviceIdMap.has(id)) return { deviceId: id, mac: this.deviceIdMap.get(id) };
-    else if (this.macMap.has(id)) return { deviceId: this.macMap.get(id), mac: id };
+    else throw new Error("请提供 deviceId 和 mac 地址");
+  }
+
+  /** 转换 id */
+  convert(id) {
+    if (this.deviceIdMap.has(id)) return this.deviceIdMap.get(id);
+    else if (this.macMap.has(id)) return this.macMap.get(id);
     else throw new Error("未找到设备");
   }
 
   /** 连接设备 */
-  async connect(id) {
-    const parsedId = this.parse(id);
-    const { deviceId, mac } = parsedId;
-    if (!this.deviceStatus.get(parsedId.mac)?.bluetooth) await BLE.connect(deviceId);
-    if (!this.deviceStatus.get(parsedId.mac)?.mqtt) MQTT.subscribe(mac);
+  async connect(mac) {
+    const deviceId = this.convert(mac);
+    if(!this.connectedDevices.has(mac)) {
+      this.connectedDevices.set(mac, false);
+      this._connectedDevices.set(mac, {
+        bluetooth: false,
+        mqtt: false,
+      })
+    }
+    
+    const mqttPromise = MQTT.connect(mac);
+    const blePromise = this._state.bluetooth ? BLE.connect(deviceId) : Promise.resolve();
+    const [mqttResult, bleResult] = await Promise.all([mqttPromise, blePromise]);
+
+    return mqttResult || bleResult;
   }
 
   /** 断开连接 */
-  async disconnect(id) {
-    const parsedId = this.parse(id);
-    const { deviceId, mac } = parsedId;
-    if (this.deviceStatus.get(parsedId.mac)?.bluetooth) await BLE.disconnect(deviceId);
-    if (this.deviceStatus.get(parsedId.mac)?.mqtt) MQTT.unsubscribe(mac);
+  async disconnect(mac) {
+    const deviceId = this.convert(mac);
+    this.connectedDevices.delete(mac);
+    this._connectedDevices.delete(mac);
+    MQTT.disconnect(mac);
+    if (this._state.bluetooth) await BLE.disconnect(deviceId);
   }
 
   /** 发送消息 */
-  async sendMessage(id, message) {
-    const parsedId = this.parse(id);
-    const { deviceId, mac } = parsedId;
-    const status = this.deviceStatus.get(parsedId.mac);
-    if (status?.bluetooth) return await BLE.sendMessage(deviceId, message);
-    else if (status?.mqtt) return MQTT.publish(mac, message);
-    else throw new Error('设备离线');
+  async sendMessage(mac, message) {
+    const deviceId = this.convert(mac);
+    MQTT.sendMessage(mac, message);
+    if (this._state.bluetooth) await BLE.sendMessage(deviceId, message);
   }
 
   /** 发送并判断接收到的信息 */
   async QaA(options) {
-    const { id, success, fail, prepare, time } = options;
-    const parsedId = this.parse(id);
+    const { mac, success, fail, prepare, time } = options;
     const timeout = setTimeout(() => {
       this.listeners.delete(tempListener);
       fail();
     }, time);
     const tempListener = {
-      onMessageReceived: (id, message) => {
-        if (id.mac == parsedId.mac) {
+      onMessageReceived: (MAC, message) => {
+        if (MAC == mac) {
           this.listeners.delete(tempListener);
           clearTimeout(timeout);
           success(message);

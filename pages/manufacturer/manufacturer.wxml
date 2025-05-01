@@ -1,6 +1,6 @@
 <view class="container">
   <view class="header">
-    <text class="title">选择设备品牌</text>
+    <text class="title">选择设备厂商</text>
     <view class="back-button icon-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
   </view>
   <view class="content">

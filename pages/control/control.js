@@ -1,10 +1,10 @@
-import Comm from '../../utils/comm.js'
+import Comm from '../../utils/comm.js';
 import { mixColors } from '../../utils/util'
 
 Page({
   data: {
     name: '',
-    id: null,
+    mac: '',
     
     isOpen: false,
     brightness: 100,
@@ -26,7 +26,7 @@ Page({
           const newIsOpen =! this.data.isOpen;
           this.setData({ isOpen: newIsOpen });
           const message = JSON.stringify({ power: newIsOpen? 'on' : 'off' });
-          Comm.sendMessage(this.data.id, message);
+          Comm.sendMessage(this.data.mac, message);
         },
       },
 
@@ -67,7 +67,7 @@ Page({
           else newMode++;
           this.setData({ mode: newMode });
           const message =  JSON.stringify({ mode: newMode });
-          Comm.sendMessage(this.data.id, message);
+          Comm.sendMessage(this.data.mac, message);
         },
       },
 
@@ -77,7 +77,7 @@ Page({
           const newIsWiFiOpen = !this.data.isWiFiOpen;
           this.setData({ isWiFiOpen: newIsWiFiOpen });
           const message = JSON.stringify({ wifi: newIsWiFiOpen? 'on' : 'off' });
-          Comm.sendMessage(this.data.id, message);
+          Comm.sendMessage(this.data.mac, message);
         },
       },
 
@@ -86,22 +86,21 @@ Page({
       },
     },
 
+    connected: false,
     listener: null,
   },
 
   async onLoad(options) {
+    Comm.bind(options.mac, options.deviceId);
+    
     this.setData({
       name: options.name,
-      id: { 
-        deviceId: options.deviceId,
-        mac: options.mac,
-      }
+      mac: options.mac,
     });
 
     this.data.listener = {
-      onStateRecovery: () => this.init(),
       onStateChange: state => {
-        if (!(state.bluetooth.available || state.mqtt)) {
+        if (!state) {
           wx.showModal({
             title: '蓝牙和网络均不可用',
             showCancel: false,
@@ -109,19 +108,39 @@ Page({
           });
         }
       },
-      onMessageReceived: (id, message) => this.handleReceivedMessage(id, message),
-      onConnectionChange: (id, connected) => {
-        if (id.mac == this.data.id.mac && !connected.bluetooth && !connected.mqtt) {
-          wx.showModal({
-            title: '设备离线',
-            showCancel: false,
-          });
-          wx.navigateBack({ delta: 2 })
+      onMessageReceived: (mac, message) => this.handleReceivedMessage(mac, message),
+      onConnectionChange: (mac, connected) => {
+        if (mac == this.data.mac) {
+          if (connected) this.data.connected = true;
+          else {
+            wx.showModal({
+              title: '设备离线',
+              showCancel: false,
+            });
+            wx.navigateBack({ delta: 2 })
+          }
         }
       }
     };
     Comm.listeners.add(this.data.listener);
-    this.init();
+    
+    const mac = this.data.mac;
+    await wx.showLoading({
+      title: '正在连接',
+      mask: true,
+    });
+    const connected = await Comm.connect(mac);
+    wx.hideLoading();
+    if (!connected) {
+      wx.showModal({
+        title: '设备离线',
+        showCancel: false,
+      });
+      wx.navigateBack({
+        delta: 1,
+      });
+    }
+    await Comm.sendMessage(mac, JSON.stringify({type: 'get'}));
   },
 
   onReady() {
@@ -136,7 +155,7 @@ Page({
 
   onUnload() {
     Comm.listeners.delete(this.data.listener);
-    Comm.disconnect(this.data.id);
+    if (this.data.connected) Comm.disconnect(this.data.mac);
   },
   
   dragStart(e) {
@@ -173,7 +192,7 @@ Page({
     let message = '';
     if (name == 'brightness') message = JSON.stringify({ bn: this.data.brightness});
     else if (name == 'color') message = JSON.stringify({ color: this.data.color});
-    await Comm.sendMessage(this.data.id, message);
+    await Comm.sendMessage(this.data.mac, message);
   },
 
   onTouchStart(e) {
@@ -199,7 +218,7 @@ Page({
       success: async () => {
         if (name == 'config') {
           wx.navigateTo({
-            url: `/pages/setup/setup?deviceId=${this.data.id.deviceId}&mac=${this.data.id.mac}`,
+            url: `/pages/setup/setup?mac=${this.data.mac}`,
           });
         }
         else this.data.buttons[name].bindTap.bind(this)();
@@ -211,8 +230,8 @@ Page({
     wx.navigateBack();
   },
 
-  handleReceivedMessage(id, message) {
-    if (id.mac == this.data.id.mac) {
+  handleReceivedMessage(mac, message) {
+    if (mac == this.data.mac) {
       try {
         const parsedMessage = JSON.parse(message);
         if (parsedMessage.power) {
@@ -247,33 +266,4 @@ Page({
       }
     }
   },
-
-  init() {
-    let id = this.data.id;
-    Comm.QaA({
-      id,
-      time: 5000,
-      prepare: async () => {
-        await wx.showLoading({
-          title: '正在连接',
-          mask: true,
-        });
-        await Comm.connect(id);
-        await Comm.sendMessage(id, JSON.stringify({type: 'get'}));
-      },
-      success: () => {
-        wx.hideLoading();
-      },
-      fail: async () => {
-        wx.hideLoading();
-        wx.showModal({
-          title: '设备离线',
-          showCancel: false,
-        });
-        wx.navigateBack({
-          delta: 1,
-        });
-      }
-    })
-  }
 });

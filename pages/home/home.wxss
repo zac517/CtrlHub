@@ -99,6 +99,7 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   color: var(--black);
   width: 100%;
   text-align: center;
+  margin-top: 0 !important;
 }
 
 .select-all, .cancel-select-all {
