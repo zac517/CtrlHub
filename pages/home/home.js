@@ -15,11 +15,15 @@ Page({
     });
     this.cancelSelectAll();
     this.listener = {
-      onStateChange: state => this.setData({ state }),
+      onStateChange: state => this.setData({
+        state
+      }),
     };
     Comm.listeners.add(this.listener);
 
-    this.setData({ state: Comm.state });
+    this.setData({
+      state: Comm.state
+    });
   },
 
   onHide() {
@@ -84,7 +88,7 @@ Page({
         content: '确定要删除选中的设备吗？',
         success: (res) => {
           if (res.confirm) {
-            const devices = this.data.devices.filter(device =>!device.isSelected);
+            const devices = this.data.devices.filter(device => !device.isSelected);
             const selectedCount = 0;
             this.setData({
               devices,
@@ -107,7 +111,7 @@ Page({
 
     newDevices.forEach((device) => {
       if (device.mac === selectedDevice.mac) {
-        device.isSelected =!device.isSelected;
+        device.isSelected = !device.isSelected;
       }
       if (device.isSelected) {
         selectedCount++;
@@ -144,14 +148,12 @@ Page({
           title: '请先开启蓝牙或连接网络',
           icon: 'none'
         });
-      }
-      else {
+      } else {
         if (e.currentTarget.dataset.device.manufacturer == "Lumina") {
           wx.navigateTo({
             url: `/pages/control/control?name=${e.currentTarget.dataset.device.name}&deviceId=${e.currentTarget.dataset.device.deviceId}&mac=${e.currentTarget.dataset.device.mac}`,
           });
-        }
-        else {
+        } else {
           wx.showToast({
             title: '暂不支持控制此类设备',
             icon: 'none'
@@ -193,6 +195,8 @@ Page({
   },
 
   goToManufacturer() {
-    wx.navigateTo({ url: '/pages/manufacturer/manufacturer' });
+    wx.navigateTo({
+      url: '/pages/manufacturer/manufacturer'
+    });
   },
 });

@@ -1,36 +1,40 @@
 class BLEManager {
   constructor() {
     this.listeners = new Set();
+
     this.state = false;
     this.foundDevices = new Map();
     this.connectedDevices = new Map();
+
     this.config = {
       discovery: {
         scanInterval: 2000,
         rssiThreshold: -80,
       },
+      connect: {
+        maxTryTime: 5000,
+      }
     };
+
     this.init();
   }
 
   /** 初始化函数 */
   async init() {
     try {
-      await wx.openBluetoothAdapter({ mode: "central" });
+      await wx.openBluetoothAdapter({
+        mode: "central"
+      });
       this.state = true;
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(this.state);
-        if (listener.onStateRecovery) listener.onStateRecovery();
       })
-    } catch (err) {
-    }
+    } catch (err) {}
 
     wx.onBluetoothAdapterStateChange(res => {
-      const lastState = this.state;
       this.state = res.available;
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(this.state);
-        if (!lastState && this.state && listener.onStateRecovery) listener.onStateRecovery();
       })
     });
 
@@ -64,7 +68,10 @@ class BLEManager {
 
   /** 开启扫描 */
   async startDiscovery(config) {
-    this.config.discovery = { ...this.config.discovery, ...config };
+    this.config.discovery = {
+      ...this.config.discovery,
+      ...config
+    };
     await wx.startBluetoothDevicesDiscovery({
       allowDuplicatesKey: true,
       interval: this.config.discovery.scanInterval,
@@ -78,38 +85,48 @@ class BLEManager {
   }
 
   /** 连接设备并记录服务和特征值 */
-  async connect(deviceId) {
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error()), 5000);
-    });
+  async connect(deviceId, config) {
+    this.config.connect = {
+      ...this.config.connect,
+      ...config
+    };
 
-    try {
-        await Promise.race([
-            wx.createBLEConnection({ deviceId }),
-            timeoutPromise
-        ]);
+    await Promise.race([
+      (async () => {
+        await wx.createBLEConnection({
+          deviceId
+        });
         const serviceData = await this._findServsAndChars(deviceId);
-        this.connectedDevices.set(deviceId, { serviceData });
+        this.connectedDevices.set(deviceId, {
+          serviceData
+        });
         await this._setMessageReceiving(deviceId, true);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
+        return true; // 连接成功，返回 true
+      })(),
+      (async () => {
+        await new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error("BLE 连接设备超时"));
+          }, this.config.connect.maxTryTime);
+        });
+      })()
+    ]);
+  }
 
   /** 发现服务和特征值 */
   async _findServsAndChars(deviceId) {
-    const servicesRes = await wx.getBLEDeviceServices({ deviceId });
+    const servicesRes = await wx.getBLEDeviceServices({
+      deviceId
+    });
     const services = servicesRes.services;
     const servicePromises = services.map(async service => {
-      const charRes = await wx.getBLEDeviceCharacteristics({ 
-        deviceId, 
-        serviceId: service.uuid 
+      const charRes = await wx.getBLEDeviceCharacteristics({
+        deviceId,
+        serviceId: service.uuid
       });
-      return { 
-        serviceId: service.uuid, 
-        characteristics: 
-        charRes.characteristics 
+      return {
+        serviceId: service.uuid,
+        characteristics: charRes.characteristics
       };
     });
     return await Promise.all(servicePromises);
@@ -145,7 +162,9 @@ class BLEManager {
   /** 断开连接 */
   async disconnect(deviceId) {
     await this._setMessageReceiving(deviceId, false);
-    await wx.closeBLEConnection({ deviceId });
+    await wx.closeBLEConnection({
+      deviceId
+    });
   }
 
   /** 将字符串转化为ArrayBuffer */

@@ -24,9 +24,8 @@
 |属性|类型|解释|BLE 传入参数|MQTT 传入参数|comm 传入参数|
 |-|-|-|-|-|-|
 |onStateChange|function|模块状态变化回调|BLE 状态(bool)|MQTT 状态(bool)|comm 状态(bool)|
-|onStateRecovery|function|模块状态恢复回调|null|null|null|
 |onConnectionChange|function|设备连接状态变化回调|deviceId(str), connected(bool)|mac(str), connected(bool)|mac(str), connected(bool)|
-|onMessageReceived|function|收到消息回调|deviceId(str), msg(str)|mac(str), msg(str)|mac(str), msg(str)|
+|onMessageReceived|function|收到消息回调|deviceId(str), message(str)|mac(str), message(str)|mac(str), message(str)|
 |onDeviceChange|function|发现设备回调|devices(list)|-|-|
 
 ## 应用信息
