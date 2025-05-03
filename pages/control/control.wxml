@@ -1,76 +1,52 @@
 <view class="container">
-    <view class="header">
-        <text class="title">{{name}}</text>
-        <view class="back-button icon-button" bind:tap="backToHome"><icon class="iconfont icon-back"/></view>
+  <view class="header">
+    <text class="title">{{name}}</text>
+    <view class="back-button icon-button" bind:tap="backToHome">
+      <icon class="iconfont icon-back" />
     </view>
-    <view class="content">
-      <view class="lamp">
-        <icon style="color: {{realColor}}"  class="iconfont icon-lamp-{{isOpen ? 'on' : 'slash'}}"/>
-      </view>
-      <view wx:if="{{isOpen}}" class="imformation">
-        <view class="imfo-child"><icon class="iconfont icon-mode"/>模式{{modeLabel[mode]}}</view>
-        <view class="imfo-child"><icon class="iconfont icon-brightness"/>亮度 {{brightness}}%</view>
-        <view class="imfo-child" style="{{isWiFiOpen ? '' : 'opacity: 0'}}"><icon class="iconfont icon-wifi"/>WiFi {{isWiFiConnected ? '已连接' : '未连接'}}</view>
-      </view>
-      <view class="panel">
-    <view 
-    class="panel-button tap-wrapper {{buttons.power.isPressed ? 'pressed' : ''}}" 
-    bindtouchstart="onTouchStart"
-    bindtouchend="onTouchEnd"
-    bindtap="onTap"
-    data-name="power">
-      <icon class="iconfont icon-power" style="{{isOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"/>
+  </view>
+  <view class="content">
+    <view class="lamp">
+      <icon style="color: {{realColor}}" class="iconfont icon-lamp-{{isOpen ? 'on' : 'slash'}}" />
     </view>
+    <view wx:if="{{isOpen}}" class="imformation">
+      <view class="imfo-child">
+        <icon class="iconfont icon-mode" />模式{{modeLabel[mode]}}
+      </view>
+      <view class="imfo-child">
+        <icon class="iconfont icon-brightness" />亮度 {{brightness}}%
+      </view>
+      <view class="imfo-child" style="{{isWiFiOpen ? '' : 'opacity: 0'}}">
+        <icon class="iconfont icon-wifi" />WiFi {{isWiFiConnected ? '已连接' : '未连接'}}
+      </view>
+    </view>
+    <view class="panel">
+      <view class="panel-button tap-wrapper {{buttons.power.isPressed ? 'pressed' : ''}}" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd" bindtap="onTap" data-name="power">
+        <icon class="iconfont icon-power" style="{{isOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}" />
+      </view>
 
-    <view 
-    class="panel-button long-button bright-wrapper" 
-    bindtouchmove="{{isOpen && mode != 3 ? 'dragTouch' : ''}}" 
-    bindtouchstart="{{isOpen && mode != 3 ? 'dragStart' : ''}}" 
-    bindtouchend="{{isOpen && mode != 3 ? 'dragEnd' : ''}}" 
-    data-name="brightness">
-      <view class="drag-text {{isOpen && mode != 3 ? '' : 'inactive'}}" style="{{brightness > 50 ? 'left' : 'right'}}: 0">亮度</view>
-    
+      <view class="panel-button long-button bright-wrapper" bindtouchmove="{{isOpen && mode != 3 ? 'dragTouch' : ''}}" bindtouchstart="{{isOpen && mode != 3 ? 'dragStart' : ''}}" bindtouchend="{{isOpen && mode != 3 ? 'dragEnd' : ''}}" data-name="brightness">
+        <view class="drag-text {{isOpen && mode != 3 ? '' : 'inactive'}}" style="{{brightness > 50 ? 'left' : 'right'}}: 0">亮度</view>
+
         <view class="bright-child {{isOpen && mode != 3 ? '' : 'inactive'}}" style="width: {{brightness + '%'}}"></view>
-    </view>
+      </view>
 
-    <view 
-    class="panel-button long-button color-wrapper" 
-    bindtouchmove="{{isOpen && mode != 3 ? 'dragTouch' : ''}}" 
-    bindtouchstart="{{isOpen && mode != 3 ? 'dragStart' : ''}}" 
-    bindtouchend="{{isOpen && mode != 3 ? 'dragEnd' : ''}}" 
-    data-name="color">
-      <view class="drag-text {{isOpen && mode != 3 ? '' : 'inactive'}}" style="{{color > 50 ? 'left' : 'right'}}: 0">色温</view>
-      <view class="bright-child {{isOpen && mode != 3 ? '' : 'inactive'}}" style="width: {{color + '%'}}"></view>
-    </view>
+      <view class="panel-button long-button color-wrapper" bindtouchmove="{{isOpen && mode != 3 ? 'dragTouch' : ''}}" bindtouchstart="{{isOpen && mode != 3 ? 'dragStart' : ''}}" bindtouchend="{{isOpen && mode != 3 ? 'dragEnd' : ''}}" data-name="color">
+        <view class="drag-text {{isOpen && mode != 3 ? '' : 'inactive'}}" style="{{color > 50 ? 'left' : 'right'}}: 0">色温</view>
+        <view class="bright-child {{isOpen && mode != 3 ? '' : 'inactive'}}" style="width: {{color + '%'}}"></view>
+      </view>
 
-    <view 
-    class="panel-button tap-wrapper {{buttons.mode.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
-    bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
-    bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
-    bindtap="{{isOpen ? 'onTap' : ''}}"
-    data-name="mode">
-      模式
-    </view>
+      <view class="panel-button tap-wrapper {{buttons.mode.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}" bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}" bindtap="{{isOpen ? 'onTap' : ''}}" data-name="mode">
+        模式
+      </view>
 
-    <view 
-    class="panel-button tap-wrapper {{buttons.wifi.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
-    style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"
-    bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
-    bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
-    bindtap="{{isOpen ? 'onTap' : ''}}"
-    data-name="wifi">
-      WiFi
-    </view>
+      <view class="panel-button tap-wrapper {{buttons.wifi.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}" bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}" bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}" bindtap="{{isOpen ? 'onTap' : ''}}" data-name="wifi">
+        WiFi
+      </view>
 
-    <view  
-    class="panel-button tap-wrapper {{buttons.config.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" 
-    style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}"
-    bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}"
-    bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}"
-    bindtap="{{isOpen ? 'onTap' : ''}}"
-    data-name="config">
-      配网
-    </view>
+      <view class="panel-button tap-wrapper {{buttons.config.isPressed ? 'pressed' : ''}} {{isOpen ? '' : 'inactive'}}" style="{{isWiFiOpen ? '' : 'color: rgba(0, 0, 0, 0.3)'}}" bindtouchstart="{{isOpen ? 'onTouchStart' : ''}}" bindtouchend="{{isOpen ? 'onTouchEnd' : ''}}" bindtap="{{isOpen ? 'onTap' : ''}}" data-name="config">
+        配网
       </view>
     </view>
+  </view>
 </view>

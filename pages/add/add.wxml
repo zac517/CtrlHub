@@ -1,19 +1,20 @@
 <view class="container">
   <view class="header">
     <text class="title">添加设备</text>
-    <view class="back-button icon-button" bind:tap="backToManu"><icon class="iconfont icon-back"/></view>
+    <view class="back-button icon-button" bind:tap="backToManu">
+      <icon class="iconfont icon-back" />
+    </view>
   </view>
   <view class="content">
     <view>
       <view class="form-title">选择设备</view>
-      <picker class="form-input {{!state ? 'ban' : ''}}" 
-      bindchange="onSelectDevice" bind:tap="onPickerTap" disabled="{{!state}}" range="{{devices}}" range-key="name">
+      <picker class="form-input {{!state ? 'ban' : ''}}" bindchange="onSelectDevice" bind:tap="onPickerTap" disabled="{{!state}}" range="{{devices}}" range-key="name">
         <view>{{selectedDevice ? selectedDevice.name : '请选择'}}</view>
       </picker>
     </view>
     <view wx:if="{{selectedDevice}}">
       <view class="form-title">设备名称</view>
-      <input placeholder="{{selectedDevice.name}}" model:value="{{enteredName}}" class="form-input"/>
+      <input placeholder="{{selectedDevice.name}}" model:value="{{enteredName}}" class="form-input" />
     </view>
     <view class="hint">*请开启手机蓝牙并保持在设备附近</view>
     <view class="hint">*若未找到设备请再次选择</view>

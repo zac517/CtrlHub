@@ -1,13 +1,15 @@
 <view class="container">
   <view class="header">
     <text class="title">设置网络</text>
-    <view class="back-button icon-button" bind:tap="backToControl"><icon class="iconfont icon-back"/></view>
+    <view class="back-button icon-button" bind:tap="backToControl">
+      <icon class="iconfont icon-back" />
+    </view>
   </view>
   <view class="content">
     <view class="form-title">选择网络</view>
-    <input placeholder="输入WiFi名称" model:value="{{ssid}}" class="form-input"/>
+    <input placeholder="输入WiFi名称" model:value="{{ssid}}" class="form-input" />
     <view class="form-title">密码</view>
-    <input placeholder="输入密码" model:value="{{password}}" class="form-input"/>
+    <input placeholder="输入密码" model:value="{{password}}" class="form-input" />
     <view class="complete {{ssid && password ? '' : 'ban'}}" bind:tap="{{ssid && password ? 'setWiFi' : '' }}">完成</view>
   </view>
 </view>

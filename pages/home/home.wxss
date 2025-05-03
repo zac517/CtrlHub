@@ -27,7 +27,8 @@
   right: 0;
 }
 
-.iconfont.icon-add, .iconfont.icon-menu {
+.iconfont.icon-add,
+.iconfont.icon-menu {
   font-size: 24px;
 }
 
@@ -39,7 +40,8 @@
   color: #b2b2b2;
 }
 
-.footer-inactive .icon-delete, .footer-inactive .icon-rename {
+.footer-inactive .icon-delete,
+.footer-inactive .icon-rename {
   color: #b2b2b2;
 }
 
@@ -57,8 +59,8 @@
 }
 
 checkbox .wx-checkbox-input {
-	width: 18px;
-	height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 3px;
   box-sizing: border-box;
   position: absolute;
@@ -68,7 +70,7 @@ checkbox .wx-checkbox-input {
 
 checkbox .wx-checkbox-input.wx-checkbox-input-checked {
   background: var(--theme-color);
-  border-color:var(--theme-color);
+  border-color: var(--theme-color);
   color: white;
 }
 
@@ -77,12 +79,17 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   font-weight: 600;
 }
 
-.select-all, .cancel-select-all, .cancel, .hint {
+.select-all,
+.cancel-select-all,
+.cancel,
+.hint {
   font-weight: 600;
   font-size: 17px;
 }
 
-.select-all, .cancel, .hint {
+.select-all,
+.cancel,
+.hint {
   display: inline-block;
 }
 
@@ -90,7 +97,9 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   display: none;
 }
 
-.select-all, .cancel-select-all, .cancel {
+.select-all,
+.cancel-select-all,
+.cancel {
   color: var(--theme-color);
   position: absolute;
 }
@@ -102,7 +111,8 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   margin-top: 0 !important;
 }
 
-.select-all, .cancel-select-all {
+.select-all,
+.cancel-select-all {
   left: 0;
 }
 
@@ -138,7 +148,8 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   display: block;
 }
 
-.rename, .delete {
+.rename,
+.delete {
   height: 72px;
   width: 72px;
   position: absolute;
@@ -159,7 +170,8 @@ checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
   font-size: 12px;
 }
 
-.icon-rename, .icon-delete {
+.icon-rename,
+.icon-delete {
   width: 100%;
   text-align: center;
   font-size: 24px;
