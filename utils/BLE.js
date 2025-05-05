@@ -29,7 +29,7 @@ class BLEManager {
       this.listeners.forEach(listener => {
         if (listener.onStateChange) listener.onStateChange(this.state);
       })
-    } catch (err) {}
+    } catch (err) { }
 
     wx.onBluetoothAdapterStateChange(res => {
       this.state = res.available;
@@ -38,17 +38,13 @@ class BLEManager {
       })
     });
 
-    // 模块采取发现的设备可重复上报的逻辑 以实现发现设备的实时更新
     wx.onBluetoothDeviceFound(res => {
-      // 这种情况下 每一批发现的设备就是当前扫描到的实时设备 里面会有重复设备 通过 Set 解决
       res.devices.forEach(device => {
         if (device.name && device.RSSI > this.config.discovery.rssiThreshold) this.foundDevices.set(device.deviceId, device);
       });
-      // 将结果返回给监听器
       this.listeners.forEach(listener => {
         if (listener.onDeviceChange) listener.onDeviceChange(Array.from(this.foundDevices.values()));
       })
-      // 清除发现的设备
       this.foundDevices.clear();
     });
 
@@ -101,7 +97,6 @@ class BLEManager {
           serviceData
         });
         await this._setMessageReceiving(deviceId, true);
-        return true; // 连接成功，返回 true
       })(),
       (async () => {
         await new Promise((_, reject) => {
